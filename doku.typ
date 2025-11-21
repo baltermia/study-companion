@@ -68,9 +68,25 @@ Dazu wurde ich noch einige .NET interne Bibliotheken verwenden wie z.B. EntityFr
 Meiner Erfahrung nach hat es sich nie gross gelohnt, exakte Zeiten für die einzelnen Aufgaben zu planen. Vielmehr möchte ich definieren welche Aufgaben ich in welcher Reihenfolge erledigen möchte.
 
 1. Repository sowie .NET Projekt initialisieren
-2. Start Nachricht des Bots einbauen
-3. iCal einlesen
-4. Zusammenfassung des Kalenders mit AI generieren
-5. Eintragen von Prüfungen, Hausaufgaben und TODOs
-6. Automatische Erinnerungen
-7. Tägliche Zusammenfassung am Morgen
+2. Debian auf Raspberry Pi installieren
+3. Start Nachricht des Bots einbauen
+4. iCal einlesen
+5. Zusammenfassung des Kalenders mit AI generieren
+6. Eintragen von Prüfungen, Hausaufgaben und TODOs
+7. Automatische Erinnerungen
+8. Tägliche Zusammenfassung am Morgen
+
+
+
+
+= Themenwahl / Relevanz
+
+= Eingrenzung des Themas
+
+= Fragestellung
+
+= Gewählte Methodik
+
+= Resultate
+
+=
