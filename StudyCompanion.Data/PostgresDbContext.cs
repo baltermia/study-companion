@@ -5,5 +5,5 @@ namespace StudyCompanion.Data;
 
 public class PostgresDbContext : DbContext
 {
-    public DbSet<Player> Player { get; set; }
+    public DbSet<User> Player { get; set; }
 }

@@ -7,16 +7,16 @@ using NodaTime;
 
 namespace StudyCompanion.Shared.Services;
 
-public class NewPlayerEventArgs(Player player) : EventArgs
+public class NewPlayerEventArgs(User user) : EventArgs
 {
-    public Player Player { get; } = player;
+    public User User { get; } = user;
 }
 
 public interface IHelper
 {
     public static event AsyncEventHandler<NewPlayerEventArgs>? NewPlayer;
 
-    public Task<Player> GetPlayerAsync(User user, long? referrerId = null, Func<Player, Task>? referred = null);
+    public Task<User> GetPlayerAsync(TelegramUser telegramUser, long? referrerId = null, Func<User, Task>? referred = null);
 }
 
 public class HelperService<T>(T context, IOptions<UserOptions> options) : IHelper
@@ -25,29 +25,27 @@ public class HelperService<T>(T context, IOptions<UserOptions> options) : IHelpe
     
     public static event AsyncEventHandler<NewPlayerEventArgs>? NewPlayer;
 
-    public async Task<Player> GetPlayerAsync(User user, long? referrerId = null, Func<Player, Task>? referred = null)
+    public async Task<User> GetPlayerAsync(TelegramUser telegramUser, long? referrerId = null, Func<User, Task>? referred = null)
     {
-        Player? player =
+        User? player =
             await context
-                .Set<Player>()
-                .Include(p => p.ReferredBy)
+                .Set<User>()
                 .Include(p => p.Settings)
-                .FirstOrDefaultAsync(p => p.User.Id == user.Id);
+                .FirstOrDefaultAsync(p => p.TelegramUser.Id == telegramUser.Id);
 
         if (player == null)
         {
-            Player? referrer = 
+            User? referrer = 
                 await context
-                    .Set<Player>()
+                    .Set<User>()
                     .Include(p => p.Settings)
-                    .FirstOrDefaultAsync(p => p.User.Id == referrerId);
+                    .FirstOrDefaultAsync(p => p.TelegramUser.Id == referrerId);
 
             string? defaultTimeZone = options.Value.DefaultTimeZone;
 
-            player = (await context.AddAsync(new Player()
+            player = (await context.AddAsync(new User()
             {
-                User = user,
-                ReferredBy = referrer,
+                TelegramUser = telegramUser,
                 Settings = new()
                 {
                     TimeZone = string.IsNullOrWhiteSpace(defaultTimeZone) ? DateTimeZone.Utc : DateTimeZoneProviders.Tzdb[defaultTimeZone],
@@ -61,9 +59,9 @@ public class HelperService<T>(T context, IOptions<UserOptions> options) : IHelpe
         }
 
         // update username
-        if (player.User.Username != user.Username && user.Username != null)
+        if (player.TelegramUser.Username != telegramUser.Username && telegramUser.Username != null)
         {
-            player.User.Username = user.Username;
+            player.TelegramUser.Username = telegramUser.Username;
 
             context.Update(player);
 

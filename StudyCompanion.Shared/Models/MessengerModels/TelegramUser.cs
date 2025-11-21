@@ -1,6 +1,6 @@
 ﻿namespace StudyCompanion.Shared.Models;
 
-public class User : Chat
+public class TelegramUser : Chat
 {
     public string? Username { get; set; }
 }

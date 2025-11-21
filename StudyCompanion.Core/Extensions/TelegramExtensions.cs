@@ -14,7 +14,7 @@ public static class TelegramExtensions
         {
             ChatType.Private => new()
             {
-                Chat = new User()
+                Chat = new TelegramUser()
                 {
                     Id = message.Chat.Id,
                     Username =

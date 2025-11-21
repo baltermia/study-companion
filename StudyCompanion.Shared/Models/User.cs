@@ -10,19 +10,16 @@ public enum Role
     Admin = 2,
 }
 
-public class Player
+public class User
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    public required User User { get; set; }
-
-    public Player? ReferredBy { get; set; }
+    public required TelegramUser TelegramUser { get; set; }
 
     public required Settings Settings { get; set; }
 
     public Role Role { get; set; } = Role.User;
 
-    public decimal PercentageWithdrawn { get; set; }
 }
 
