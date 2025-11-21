@@ -1,0 +1,17 @@
+minimaltelegrambot-intentions:
+  type: repository
+  title: Minimal Telegram Bot - Intentions
+  author: Pavel Kulakov
+  url: https://github.com/k-paul-acct/minimal-telegram-bot?tab=readme-ov-file#intentions
+
+copilot-students:
+  type: article
+  title: GitHub Student Developer Pack
+  author: Microsoft
+  url: https://education.github.com/pack
+
+microsoft-extensions-ai:
+  type: article
+  title: Microsoft.Extensions.AI libraries
+  author: Microsoft
+  url: https://learn.microsoft.com/en-us/dotnet/ai/microsoft-extensions-ai
