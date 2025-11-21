@@ -4,7 +4,6 @@ using StudyCompanion.Core.Contracts;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using StackExchange.Redis;
 using StudyCompanion.Data;
 
 namespace StudyCompanion.Core;
@@ -30,7 +29,6 @@ public static class Program
 
         builder.ConfigureAppsettings();
 
-        // TODO configure mariadb state machine
         builder.Services.AddStateMachine();
 
         builder.WebHost.UseKestrelHttpsConfiguration();
@@ -40,16 +38,13 @@ public static class Program
         string redisConnection = builder.Configuration.GetConnectionString("RedisConnection")!;
 
         builder.Services
-            .AddData(connectionString)
-            .AddSingleton<IConnectionMultiplexer>(await ConnectionMultiplexer.ConnectAsync(redisConnection));
+            .AddData(connectionString);
+            //.AddSingleton<IConnectionMultiplexer>(await ConnectionMultiplexer.ConnectAsync(redisConnection));
             // libs
             //.ConfigureDataServices(builder.Configuration)
 
             // options
             // .ConfigureOptions<StudyCompanionOptions>(builder.Configuration)
-
-            // services
-            //.AddScoped<IHelper, HelperService<MariaDbContext>>();
             
             // hosted services
             //.AddHostedService<PayoutCheckerService>();
@@ -61,7 +56,8 @@ public static class Program
         bot.UseStateMachine();
 
         // commands
-        //bot.ConfigureCommand<Commands.Start>()
+        bot
+            .ConfigureCommand<Commands.Start>();
             
         // configure commands and callbacks
         bot.ConfigureCommands();

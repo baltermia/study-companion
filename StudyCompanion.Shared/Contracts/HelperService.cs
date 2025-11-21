@@ -16,17 +16,18 @@ public interface IHelper
 {
     public static event AsyncEventHandler<NewPlayerEventArgs>? NewPlayer;
 
-    public Task<User> GetPlayerAsync(TelegramUser telegramUser, long? referrerId = null, Func<User, Task>? referred = null);
+    public Task<User> GetPlayerAsync(TelegramUser telegramUser);
 }
 
-public class HelperService<T>(T context, IOptions<UserOptions> options) : IHelper
+public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<UserOptions> options) : IHelper
     where T : DbContext
 {
     
     public static event AsyncEventHandler<NewPlayerEventArgs>? NewPlayer;
 
-    public async Task<User> GetPlayerAsync(TelegramUser telegramUser, long? referrerId = null, Func<User, Task>? referred = null)
+    public async Task<User> GetPlayerAsync(TelegramUser telegramUser)
     {
+        await using T context = await contextFactory.CreateDbContextAsync();
         User? player =
             await context
                 .Set<User>()
@@ -35,12 +36,6 @@ public class HelperService<T>(T context, IOptions<UserOptions> options) : IHelpe
 
         if (player == null)
         {
-            User? referrer = 
-                await context
-                    .Set<User>()
-                    .Include(p => p.Settings)
-                    .FirstOrDefaultAsync(p => p.TelegramUser.Id == referrerId);
-
             string? defaultTimeZone = options.Value.DefaultTimeZone;
 
             player = (await context.AddAsync(new User()
@@ -53,9 +48,6 @@ public class HelperService<T>(T context, IOptions<UserOptions> options) : IHelpe
             })).Entity;
 
             await context.SaveChangesAsync();
-
-            if (referrer != null && referred != null)
-                await referred(referrer);
         }
 
         // update username

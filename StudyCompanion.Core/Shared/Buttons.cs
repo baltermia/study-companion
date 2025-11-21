@@ -10,8 +10,8 @@ public static class Buttons
     {
         InlineKeyboard = 
         [[
-            InlineKeyboardButton.WithCallbackData("✔️ " + lang.GetLocalized(en => "Yes", de => "Ja"), prefix + "yes"),
-            InlineKeyboardButton.WithCallbackData("❌ " + lang.GetLocalized(en => "No", de => "Nein"), prefix + "no"),
+            InlineKeyboardButton.WithCallbackData("✔️ " + lang.GetLocalized(de => "Ja", en => "Yes"), prefix + "yes"),
+            InlineKeyboardButton.WithCallbackData("❌ " + lang.GetLocalized(de => "Nein", en => "No"), prefix + "no"),
         ]],
     };
 }
