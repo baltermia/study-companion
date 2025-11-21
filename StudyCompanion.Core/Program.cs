@@ -1,2 +1,130 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using MinimalTelegramBot.Builder;
+using MinimalTelegramBot.StateMachine.Extensions;
+using StudyCompanion.Core.Contracts;
+using Serilog;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using StackExchange.Redis;
+using StudyCompanion.Data;
+
+namespace StudyCompanion.Core;
+
+public static class Program
+{
+    private static readonly List<Action<BotApplication>> _configureCommands = [];
+    private static readonly List<Action<BotApplication>> _configureCallbacks = [];
+    private static readonly List<CommandDescription> _commands = [];
+
+    public static async Task Main(string[] args)
+    {
+        string? contentRoot = Environment.GetEnvironmentVariable("STUDY_COMPANION_BOT_CONTENT_ROOT");
+        
+        BotApplicationBuilder builder = BotApplication.CreateBuilder(new BotApplicationOptions()
+        {
+            WebApplicationOptions = new()
+            {
+                Args = args,
+                ContentRootPath = contentRoot,
+            }
+        });
+
+        builder.ConfigureAppsettings();
+
+        // TODO configure mariadb state machine
+        builder.Services.AddStateMachine();
+
+        builder.WebHost.UseKestrelHttpsConfiguration();
+
+        // these are required for the bot to run, therefore the !
+        string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+        string redisConnection = builder.Configuration.GetConnectionString("RedisConnection")!;
+
+        builder.Services
+            .AddData(connectionString)
+            .AddSingleton<IConnectionMultiplexer>(await ConnectionMultiplexer.ConnectAsync(redisConnection));
+            // libs
+            //.ConfigureDataServices(builder.Configuration)
+
+            // options
+            // .ConfigureOptions<StudyCompanionOptions>(builder.Configuration)
+
+            // services
+            //.AddScoped<IHelper, HelperService<MariaDbContext>>();
+            
+            // hosted services
+            //.AddHostedService<PayoutCheckerService>();
+
+        builder.Logging.ConfigureLogging(builder.Configuration);
+
+        BotApplication bot = builder.Build();
+
+        bot.UseStateMachine();
+
+        // commands
+        //bot.ConfigureCommand<Commands.Start>()
+            
+        // configure commands and callbacks
+        bot.ConfigureCommands();
+        
+        // set commands
+        await SetTelegramCommandsAsync(bot.Services);
+
+        await bot.RunAsync();
+    }
+
+    private static BotApplication ConfigureCommand<T>(this BotApplication bot) where T : IBotCommand
+    {
+        _configureCommands.Add(T.ConfigureCommands);
+        _configureCallbacks.Add(T.ConfigureCallbacks);
+        _commands.AddRange(T.Commands);
+
+        return bot;
+    }
+
+    private static void ConfigureCommands(this BotApplication bot)
+    {
+        foreach (Action<BotApplication> configure in _configureCommands)
+            configure.Invoke(bot);
+        foreach (Action<BotApplication> configure in _configureCallbacks)
+            configure.Invoke(bot);
+    }
+    
+    private static async Task SetTelegramCommandsAsync(IServiceProvider provider)
+    {
+        using IServiceScope scope = provider.CreateScope();
+        ITelegramBotClient client = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+
+        // user commands
+        await client.SetMyCommands(_commands.Where(cmd => cmd.Chat.HasFlag(CommandChat.Private)).Select(cmd => new BotCommand()
+        {
+            Command = cmd.Command,
+            Description = cmd.Description
+        }), BotCommandScope.AllPrivateChats());
+
+        // group commands
+        await client.SetMyCommands(_commands.Where(cmd => cmd.Chat.HasFlag(CommandChat.Group)).Select(cmd => new BotCommand()
+        {
+            Command = cmd.Command,
+            Description = cmd.Description
+        }), BotCommandScope.AllGroupChats());
+    }
+
+    private static void ConfigureLogging(this ILoggingBuilder builder, IConfiguration configuration)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configuration)
+            .CreateLogger();
+
+        builder.ClearProviders();
+        builder.AddSerilog();
+    }
+    
+    private static void ConfigureAppsettings(this BotApplicationBuilder builder) => builder.Configuration
+        .AddJsonFile("appsettings.json",
+            optional: false,
+            reloadOnChange: true)
+        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json",
+            optional: true,
+            reloadOnChange: true);
+
+}
