@@ -55,10 +55,15 @@ Die zentrale Fragestellung meines Projekts lautet:\
 Wie kann man einen Telegram-Bot erstellen, welcher Schülern mit automatischen Erinnerungen und Zusammenfassungen, durch Bereitstellung eines iCal-Kalenders und manueller Eingabe von Terminen den Alltag erleichtert und zudem leichte installation erlaubt?
 
 Dazu habe ich noch folgende Unterfragen formuliert:\
-1. Welche Frameworks und Bibliotheken eignen für die Entwicklung eines Telegram-Bots 
+1. Welche Frameworks und Bibliotheken eignen sich für die Entwicklung des Bots?
 2. Wie kann der Bot den iCal-Kalender effizient einlesen und verarbeiten?
-3. Kann ich dadurch eine Vielzahl an AI-Modellen unterstützen, um den Bot flexibel zu gestalten?
+3. Kann der Bot für flexibleres Hosting mehrere AI-Modelle mühelos einbinden?
 4. Wie kann die Installation auf einem Raspberry Pi möglichst einfach gestaltet werden?
+
+== Verwendung von Typst
+
+Ich möchte noch gerne einen kurzen Teil über die Verwendung von #link("https://typst.app/")[Typst] in meinem Projekt schreiben, da es meiner Meinung nach auch direkt mit der Projektarbeit zu tun hat. Typst ist eine Sprache welche ähnliche Ziele verfolgt wie LaTeX, aber meiner Meinung nach viel einfacher zu verwenden ist. Der Quelltext erinnert viel mehr an Markdown, trotzdem fehlt es der Sprache aber nicht an erweiterter Funktionalität, so wie es LaTeX bietet. Durch die Verwendung von Typst kann ich viel schneller und einfacher Dokumente erstellen, welche zudem auch noch viel schöner aussehen. Somit kann ich mich bei Projekten viel mehr auf den Inhalt konzentrieren, anstatt mich mit der Formatierung herumzuschlagen. @typst-for-latex-users \
+Ich empfehle, den Quellcode dieses Dokumentes anzuschauen, um einen Eindruck von der Sprache zu bekommen. (Verfügbar auf Github unter #link("https://github.com/baltermia/study-companion/blob/main/doku.typ")[baltermia/study-companion/doku.typ]).
 
 = Durchführung
 
@@ -76,9 +81,13 @@ apt install docker
 
 Durch meine mehrjährige Erfahrung mit dem .NET Framework habe ich mich auch für dieses für den Bot entschieden. Telegram stellt bereits eine eigene Bibliothek zur Verfügung #link("https://github.com/TelegramBots/Telegram.Bot")[TelegramBots/Telegram.Bot]. Ich habe mich für eine erweiterte Bibliothek - #link("https://github.com/k-paul-acct/minimal-telegram-bot")[k-paul-acct/minimal-telegram-bot] - entschieden, da diese viel Boilerplate Code abnimmt und die Entwicklung an die Workflows von .NET anpasst. @minimaltelegrambot-intentions Im hintergrund verwendet diese Bibliothek aber immer noch die offizielle Telegram Bibliothek.
 
+== iCal Verarbeitung
+
+Auch für die iCal Verarbeitung gibt es eine hervorragende .NET Bibliotheke, nämlich #link("https://github.com/ical-org/ical.net")[ical.net].
+
 == AI Integration
 
-Der Bot muss keine komplexen Probleme mit AI Lösen, sondern lediglich Zusammenfassungen generieren. Dazu sind heutzutage schon vortrainierte Modelle verfügbar, welche dies ermöglichen. Ich habe mich für die Verwendung der OpenAI API entschieden, da diese einfach zu verwenden ist und gute Resultate liefert. Zudem stellt Microsoft die Pro Version für Studenten der FHGR mittels Github-Copilot Gratis zu Verfügung.
+Der Bot muss keine komplexen Probleme mit AI Lösen, sondern lediglich Zusammenfassungen generieren. Dazu gibt es ja heutzutage schon eine vielzahl an vortrainierten Modelle zur Verfügung, welche dies ermöglichen. @summarization-benchmark Ich habe mich für die Verwendung der OpenAI API entschieden, da diese einfach zu verwenden ist und gute Resultate liefert. Zudem stellt Microsoft die Pro Version für Studenten mittels Github-Copilot Gratis zu Verfügung. @copilot-students
 
 Um es möglichen Nutzern des Bots so einfach wie möglich zu machen, den Bot selbst zu hosten und ihre eigenen API Keys zu verwenden, verwende ich die von Microsoft entwickelte #link("https://github.com/dotnet/extensions/blob/main/src/Libraries/Microsoft.Extensions.AI/README.md")[Microsoft.Extensions.AI] Bibliothek. Diese abstrahiert die verschiedenen AI Anbieter und ermöglicht es, den Anbieter einfach zu wechseln, ohne den Code anpassen zu müssen. @microsoft-extensions-ai
 

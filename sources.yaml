@@ -1,3 +1,9 @@
+typst-for-latex-users:
+  type: article
+  title: Guide for LaTeX Users
+  author: Typst Dokumentation
+  url: https://typst.app/docs/guides/for-latex-users/
+
 minimaltelegrambot-intentions:
   type: repository
   title: Minimal Telegram Bot - Intentions
@@ -15,3 +21,9 @@ microsoft-extensions-ai:
   title: Microsoft.Extensions.AI libraries
   author: Microsoft
   url: https://learn.microsoft.com/en-us/dotnet/ai/microsoft-extensions-ai
+
+summarization-benchmark:
+  type: repository
+  title: Benchmark of Small Language Models for News Summarization
+  author: Xtra Computing Group
+  url: https://github.com/Xtra-Computing/SLM_Summary_Benchmark
