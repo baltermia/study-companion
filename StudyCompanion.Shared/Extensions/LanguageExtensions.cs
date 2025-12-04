@@ -6,7 +6,7 @@ public static class LanguageExtensions
 {
     public static string GetLocalized(this Language language, 
         Func<Language, string> de, 
-        Func<Language, string>? en = null) 
+        Func<Language, string>? en) 
         => language switch
     {
         Language.English => en?.Invoke(language) ?? de(language),

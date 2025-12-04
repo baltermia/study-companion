@@ -2,6 +2,7 @@
 using MinimalTelegramBot.StateMachine.Extensions;
 using StudyCompanion.Core.Contracts;
 using Serilog;
+using StudyCompanion.Core.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using StudyCompanion.Data;
@@ -38,6 +39,8 @@ public static class Program
         string redisConnection = builder.Configuration.GetConnectionString("RedisConnection")!;
 
         builder.Services
+            .AddHostedService<CalendarRefreshService>()
+            .AddSingleton<CalendarService>()
             .AddData(connectionString);
             //.AddSingleton<IConnectionMultiplexer>(await ConnectionMultiplexer.ConnectAsync(redisConnection));
             // libs
@@ -57,6 +60,7 @@ public static class Program
 
         // commands
         bot
+            .ConfigureCommand<Commands.Settings>()
             .ConfigureCommand<Commands.Start>();
             
         // configure commands and callbacks

@@ -14,7 +14,7 @@ internal static class RoleFilter
             await using AsyncServiceScope scope = context.Services.CreateAsyncScope();
             DbContext db = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            return await db.Set<User>().FirstOrDefaultAsync(p => p.TelegramUser.Id == context.BotRequestContext.ChatId) is User player && roles.Contains(player.Role);
+            return await db.Set<User>().FirstOrDefaultAsync(p => p.TelegramUser.Id == context.BotRequestContext.ChatId) is User user && roles.Contains(user.Role);
         });
 }
 

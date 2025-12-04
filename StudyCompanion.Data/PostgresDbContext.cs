@@ -19,9 +19,9 @@ public class PostgresDbContext : DbContext
         foreach (IMutableForeignKey relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
 
-        modelBuilder.Entity<User>(player =>
+        modelBuilder.Entity<User>(user =>
         {
-            player
+            user
                 .OwnsOne(p => p.TelegramUser,
                     u => u.Property(w => w.Id).HasColumnName("TelegramUserId"));
         });

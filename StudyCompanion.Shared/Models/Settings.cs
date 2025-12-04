@@ -18,4 +18,6 @@ public class Settings
     public Language Language { get; set; } = Language.English;
 
     public required DateTimeZone TimeZone { get; set; }
+    
+    public Calender? Calender { get; set; }
 }

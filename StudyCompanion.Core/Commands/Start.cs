@@ -61,38 +61,46 @@ internal class Start : IBotCommand
     {
         await context.DropPrevious();
 
-        User? player = null;
+        User? user = null;
 
         // ensures that the account gets created
-        if (context.Update.Message?.ConvertMessage() is Message msg && msg.Chat is TelegramUser user)
+        if (context.Update.Message?.ConvertMessage() is Message msg && msg.Chat is TelegramUser telegramUser)
         {
-            long? id = null;
-
-            if (!string.IsNullOrWhiteSpace(msg.Text))
-            {
-                string[] args = msg.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-                if (args.Length >= 2 && args[1].StartsWith("ref"))
-                {
-                    string[] splits = args[1].Split("_");
-
-                    if (splits.Length >= 2 && long.TryParse(splits[1], out long result))
-                        id = result;
-                }
-            }
-
-            player = await helper.GetPlayerAsync(user);
+            user = await helper.GetUserAsync(telegramUser);
         }
 
-        Language lang = player?.Settings.Language ?? Language.English;
+        Language lang = user?.Settings.Language ?? Language.English;
 
         string text = lang.GetLocalized(
-            de => "Wilkommen, ich bin dein Study Companion!".Bold().Newline() 
+            de => "Wilkommen, ich bin dein Study Companion!".Bold().Newline(),
+            en => "Welcome to your Study Companion!".Bold().Newline() 
         );
+
+        if (user?.Settings.Calender?.Link != null)
+        {
+            // ical is needed
+            
+            text += lang.GetLocalized(
+                de => """
+                      Erstmals brauche ich deinen iCal Kalender. Antworte dazu einfach mit dem Link.
+                      
+                      Sprache ändern / Change language: /settings
+                      """,
+                de => """
+                      First off I need your iCal Calender. Simply respond with the link.
+
+                      Change Language / Sprache ändern: /settings
+                      """
+            );
+        }
+        else
+        {
+            
+        }
 
         return 
             text.AsMarkup()
-                .WithButtons(GetButtons(lang, player?.Role))
+                .WithButtons(GetButtons(lang, user?.Role))
                 .Delete();
     }
 }

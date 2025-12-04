@@ -7,38 +7,35 @@ using NodaTime;
 
 namespace StudyCompanion.Shared.Services;
 
-public class NewPlayerEventArgs(User user) : EventArgs
+public class NewUserEventArgs(User user) : EventArgs
 {
     public User User { get; } = user;
 }
 
 public interface IHelper
 {
-    public static event AsyncEventHandler<NewPlayerEventArgs>? NewPlayer;
+    public static event AsyncEventHandler<NewUserEventArgs>? NewUser;
 
-    public Task<User> GetPlayerAsync(TelegramUser telegramUser);
+    public Task<User> GetUserAsync(TelegramUser telegramUser);
 }
 
 public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<UserOptions> options) : IHelper
     where T : DbContext
 {
-    
-    public static event AsyncEventHandler<NewPlayerEventArgs>? NewPlayer;
-
-    public async Task<User> GetPlayerAsync(TelegramUser telegramUser)
+    public async Task<User> GetUserAsync(TelegramUser telegramUser)
     {
         await using T context = await contextFactory.CreateDbContextAsync();
-        User? player =
+        User? user =
             await context
                 .Set<User>()
                 .Include(p => p.Settings)
                 .FirstOrDefaultAsync(p => p.TelegramUser.Id == telegramUser.Id);
 
-        if (player == null)
+        if (user == null)
         {
             string? defaultTimeZone = options.Value.DefaultTimeZone;
 
-            player = (await context.AddAsync(new User()
+            user = (await context.AddAsync(new User()
             {
                 TelegramUser = telegramUser,
                 Settings = new()
@@ -51,15 +48,15 @@ public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<User
         }
 
         // update username
-        if (player.TelegramUser.Username != telegramUser.Username && telegramUser.Username != null)
+        if (user.TelegramUser.Username != telegramUser.Username && telegramUser.Username != null)
         {
-            player.TelegramUser.Username = telegramUser.Username;
+            user.TelegramUser.Username = telegramUser.Username;
 
-            context.Update(player);
+            context.Update(user);
 
             await context.SaveChangesAsync();
         }
 
-        return player;
+        return user;
     }
 }
