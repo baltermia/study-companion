@@ -40,6 +40,8 @@ public class ResultBuilder : MinimalTelegramBot.Results.IResult
 
         // first check if we already have a state?
         // otherwise add new one
+        
+        // TODO change to using distributed cache
 
         if (USE_DELETE && Delete)
             await context.Services

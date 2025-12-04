@@ -16,20 +16,30 @@ public interface IHelper
 {
     public static event AsyncEventHandler<NewUserEventArgs>? NewUser;
 
-    public Task<User> GetUserAsync(TelegramUser telegramUser);
+    public Task<User> GetUserAsync(TelegramUser telegramUser, bool withCalendar = false);
 }
 
 public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<UserOptions> options) : IHelper
     where T : DbContext
 {
-    public async Task<User> GetUserAsync(TelegramUser telegramUser)
+    public async Task<User> GetUserAsync(TelegramUser telegramUser, bool withCalendar = false)
     {
         await using T context = await contextFactory.CreateDbContextAsync();
-        User? user =
-            await context
-                .Set<User>()
-                .Include(p => p.Settings)
-                .FirstOrDefaultAsync(p => p.TelegramUser.Id == telegramUser.Id);
+        User? user;
+        
+        if (withCalendar)
+            user =
+                await context
+                    .Set<User>()
+                    .Include(p => p.Settings)
+                        .ThenInclude(s => s.Calender)
+                    .FirstOrDefaultAsync(p => p.TelegramUser.Id == telegramUser.Id);
+        else
+            user =
+                await context
+                    .Set<User>()
+                    .Include(p => p.Settings)
+                    .FirstOrDefaultAsync(p => p.TelegramUser.Id == telegramUser.Id);
 
         if (user == null)
         {

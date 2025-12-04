@@ -1,14 +1,23 @@
+using Ical.Net;
+using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
+using Microsoft.Extensions.Options;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.Handling;
+using MinimalTelegramBot.StateMachine.Abstractions;
+using MinimalTelegramBot.StateMachine.Extensions;
 using StudyCompanion.Core.Builders;
 using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Extensions;
 using StudyCompanion.Core.Shared.Filters;
+using StudyCompanion.Data;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Shared.Models;
+using StudyCompanion.Shared.Options;
 using StudyCompanion.Shared.Services;
 using IResult = MinimalTelegramBot.Results.IResult;
+using Results = MinimalTelegramBot.Results.Results;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -49,15 +58,21 @@ internal class Start : IBotCommand
         bot.HandleCommand("/start", OnStart)
             .FilterChatType(ChatType.Private);
 
-        // TODO after handling start command (for referral)
-        // we could add a generic handler which will always
-        // ensure that a user exists
-
         bot.HandleMessageText("🏠 Home", OnStart)
             .FilterChatType(ChatType.Private);
+        
+        bot.HandleUpdateType(UpdateType.Message, OnCalender)
+            .FilterState<SetCalendarState.Setting>();
+    }
+    
+    [StateGroup(nameof(SetCalendarState))]
+    public static class SetCalendarState
+    {
+        [State(1)]
+        public class Setting;
     }
 
-    private static async Task<IResult> OnStart(BotRequestContext context, IHelper helper)
+    private static async Task<IResult> OnStart(BotRequestContext context, IHelper helper, IOptions<UserOptions> options)
     {
         await context.DropPrevious();
 
@@ -66,7 +81,7 @@ internal class Start : IBotCommand
         // ensures that the account gets created
         if (context.Update.Message?.ConvertMessage() is Message msg && msg.Chat is TelegramUser telegramUser)
         {
-            user = await helper.GetUserAsync(telegramUser);
+            user = await helper.GetUserAsync(telegramUser, withCalendar: true);
         }
 
         Language lang = user?.Settings.Language ?? Language.English;
@@ -76,26 +91,41 @@ internal class Start : IBotCommand
             en => "Welcome to your Study Companion!".Bold().Newline() 
         );
 
-        if (user?.Settings.Calender?.Link != null)
+        if (user?.Settings.Calender is not Calender cal)
         {
             // ical is needed
+            
+            await context.SetState(new SetCalendarState.Setting());
             
             text += lang.GetLocalized(
                 de => """
                       Erstmals brauche ich deinen iCal Kalender. Antworte dazu einfach mit dem Link.
-                      
+
                       Sprache ändern / Change language: /settings
                       """,
-                de => """
+                en => """
                       First off I need your iCal Calender. Simply respond with the link.
 
                       Change Language / Sprache ändern: /settings
                       """
             );
         }
+        else if (Calendar.Load(cal.Data) is Calendar ical)
+        {
+            CalDateTime start = new(DateTime.UtcNow);
+            CalDateTime end = new(DateTime.UtcNow.AddDays(options.Value.CalendarFutureDays));
+            
+            List<CalendarEvent> events = ical.Events
+                .Where(e => e.GetOccurrences(start).TakeWhileBefore(end).Any())
+                .ToList();
+            
+            foreach (CalendarEvent ev in events)
+                // show the calendar items in a list:
+                text += $"- {ev.Summary} [{ev.Start?.Date.ToString("d")}] {ev.Start?.Time} - {ev.End?.Time} {ev.Description?.Trim()}".Newline();
+        }
         else
         {
-            
+            text += "Invalid Calendar";
         }
 
         return 
@@ -103,6 +133,52 @@ internal class Start : IBotCommand
                 .WithButtons(GetButtons(lang, user?.Role))
                 .Delete();
     }
+
+    private static async Task<IResult> OnCalender(BotRequestContext context, PostgresDbContext db, IHelper helper)
+    {
+        if (context.Update.Message?.ConvertMessage() is not Message msg || msg.Chat is not TelegramUser telegramUser)
+            return Results.Empty;
+
+        if (context.MessageText is not string link)
+            return Results.Empty;
+
+        if (!IsValidHttpUrl(link))
+            return "Please provide a valid url.".Delete();
+
+        User user = await helper.GetUserAsync(telegramUser);
+
+        using HttpClient client = new() ;
+        try
+        {
+            string data = await client.GetStringAsync(link);
+            
+            if (Calendar.Load(data) is not Calendar ical)
+                return "The provided link did not lead to a valid iCalendar.".Delete();
+            
+            user.Settings.Calender = new Calender()
+            {
+                Data = data,
+                Link = link,
+                LastRefresh = DateTime.UtcNow,
+            };
+
+            db.Update(user);
+                
+            await db.SaveChangesAsync();
+                
+            await context.DropPrevious();
+
+            return "Calendar saved. Fetch with /start".Delete();
+        }
+        catch
+        {
+            return "Error fetching Calendar. Please try again.".Delete();
+        }
+    }
+    private static bool IsValidHttpUrl(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        if (!Uri.TryCreate(text, UriKind.Absolute, out var uri)) return false;
+        return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+    }
 }
-
-

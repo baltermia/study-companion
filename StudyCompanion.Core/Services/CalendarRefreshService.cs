@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StudyCompanion.Data;
 using StudyCompanion.Shared.Models;
-using UserOptions = StudyCompanion.Shared.Options.UserOptions;
+using StudyCompanion.Shared.Options;
 
 namespace StudyCompanion.Core.Services;
 

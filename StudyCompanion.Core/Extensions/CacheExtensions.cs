@@ -25,7 +25,7 @@ public static class CacheExtensions
 /// If not, the key will be created, the <see cref="KeyExists"/> property will be false and after being disposed
 /// the key gets dropped again.
 /// </summary>
-public struct KeyTransaction(IDistributedCache cache, string key, bool exists) : IAsyncDisposable
+public readonly struct KeyTransaction(IDistributedCache cache, string key, bool exists) : IAsyncDisposable
 {
     public bool KeyExists { get; } = exists;
 

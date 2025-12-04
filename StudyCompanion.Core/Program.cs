@@ -6,6 +6,8 @@ using StudyCompanion.Core.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using StudyCompanion.Data;
+using StudyCompanion.Shared.Options;
+using StudyCompanion.Shared.Extensions;
 
 namespace StudyCompanion.Core;
 
@@ -46,13 +48,13 @@ public static class Program
             .AddDistributedMemoryCache()
                 
             .AddHostedService<CalendarRefreshService>()
-            .AddData(connectionString);
+            .AddData(connectionString)
             //.AddSingleton<IConnectionMultiplexer>(await ConnectionMultiplexer.ConnectAsync(redisConnection));
             // libs
             //.ConfigureDataServices(builder.Configuration)
 
             // options
-            // .ConfigureOptions<StudyCompanionOptions>(builder.Configuration)
+            .ConfigureOptions<UserOptions>(builder.Configuration);
             
             // hosted services
             //.AddHostedService<PayoutCheckerService>();
