@@ -9,8 +9,7 @@ namespace StudyCompanion.Core.Services;
 public class CalendarRefreshService(
     IDbContextFactory<PostgresDbContext> dbFactory, 
     IOptions<UserOptions> options,
-    ILogger<CalendarRefreshService> logger,
-    CalendarService calendarService
+    ILogger<CalendarRefreshService> logger
 ) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken token)
@@ -31,9 +30,11 @@ public class CalendarRefreshService(
 
                 foreach (Calender calender in overdue)
                 {
+                    using HttpClient client = new() ;
+                    
                     try
                     {
-                        calender.Data = await calendarService.FetchCalendar(calender.Link, token);
+                        calender.Data = await client.GetStringAsync(calender.Link, token);
                         calender.LastRefresh = DateTime.UtcNow;
 
                         db.Update(calender);

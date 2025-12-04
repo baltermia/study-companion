@@ -1,17 +1,19 @@
-﻿using StackExchange.Redis;
+﻿using Microsoft.Extensions.Caching.Distributed;
 
 namespace StudyCompanion.Core.Extensions;
 
-public static class RedisExtensions
+public static class CacheExtensions
 {
-    public static async Task<KeyTransaction> CreateTransactionAsync(this IDatabase database, string key, string dummyValue = "")
+    public static async Task<KeyTransaction> CreateTransactionAsync(this IDistributedCache cache, string key, string dummyValue = "")
     {
-        bool exists = await database.KeyExistsAsync(key);
+        string? str = await cache.GetStringAsync(key);
+        
+        bool exists = str != null;
 
         if (!exists)
-            await database.StringSetAsync(key, dummyValue);
+            await cache.SetStringAsync(key, dummyValue);
 
-        return new KeyTransaction(database, key, exists);
+        return new KeyTransaction(cache, key, exists);
     }
 }
 
@@ -23,13 +25,13 @@ public static class RedisExtensions
 /// If not, the key will be created, the <see cref="KeyExists"/> property will be false and after being disposed
 /// the key gets dropped again.
 /// </summary>
-public struct KeyTransaction(IDatabase db, string key, bool exists) : IAsyncDisposable
+public struct KeyTransaction(IDistributedCache cache, string key, bool exists) : IAsyncDisposable
 {
     public bool KeyExists { get; } = exists;
 
     public async ValueTask DisposeAsync()
     {
         if (!KeyExists)
-            await db.KeyDeleteAsync(key);
+            await cache.RemoveAsync(key);
     }
 }
