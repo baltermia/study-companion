@@ -34,13 +34,11 @@ internal class Start : IBotCommand
     {
         List<KeyboardButton> row1 =
         [
-            new("🏠 Home"),
+            new(lang.GetLocalized(en =>"🏠 Home", de => "🏠 Home" )),
+            new(lang.GetLocalized(en =>"⚙️ Settings", de => "⚙️ Einstellungen" )),
         ];
 
-        List<KeyboardButton> row2 =
-        [
-            new("⚙️ Einstellungen"),
-        ];
+        List<KeyboardButton> row2 = [];
 
         if (role is Role.Mod or Role.Admin)
             row2.Add(new KeyboardButton("🛡️ Admin"));
@@ -87,8 +85,8 @@ internal class Start : IBotCommand
         Language lang = user?.Settings.Language ?? Language.English;
 
         string text = lang.GetLocalized(
-            de => "Wilkommen, ich bin dein Study Companion!".Bold().Newline(),
-            en => "Welcome to your Study Companion!".Bold().Newline() 
+            en => "Welcome to your Study Companion!".Bold().Newline() ,
+            de => "Willkommen, ich bin dein Study Companion!".Bold().Newline()
         );
 
         if (user?.Settings.Calender is not Calender cal)
@@ -98,15 +96,15 @@ internal class Start : IBotCommand
             await context.SetState(new SetCalendarState.Setting());
             
             text += lang.GetLocalized(
-                de => """
-                      Erstmals brauche ich deinen iCal Kalender. Antworte dazu einfach mit dem Link.
-
-                      Sprache ändern / Change language: /settings
-                      """,
                 en => """
                       First off I need your iCal Calender. Simply respond with the link.
 
                       Change Language / Sprache ändern: /settings
+                      """,
+                de => """
+                      Erstmals brauche ich deinen iCal Kalender. Antworte dazu einfach mit dem Link.
+
+                      Sprache ändern / Change language: /settings
                       """
             );
         }

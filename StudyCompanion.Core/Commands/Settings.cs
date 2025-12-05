@@ -31,7 +31,7 @@ internal class Settings : IBotCommand
     {
         InlineKeyboard = 
         [[
-            InlineKeyboardButton.WithCallbackData(lang.GetLocalized(en => "📅 Import iCal", de => "📅 iCal importieren"), "settings_ical"),
+            //InlineKeyboardButton.WithCallbackData(lang.GetLocalized(en => "📅 Import iCal", de => "📅 iCal importieren"), "settings_ical"),
             InlineKeyboardButton.WithCallbackData(lang.GetLocalized(en => "📚️ Set Language", de => "📚️ Sprache setzen"), "settings_language"),
             InlineKeyboardButton.WithCallbackData(lang.GetLocalized(en => "🌍 Set Timezone", de =>  "🌍 Zeitzone setzen"), "settings_timezone"),
         ],],
