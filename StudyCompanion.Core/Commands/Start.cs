@@ -1,3 +1,4 @@
+using System.Globalization;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
@@ -20,6 +21,7 @@ using IResult = MinimalTelegramBot.Results.IResult;
 using Results = MinimalTelegramBot.Results.Results;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Calendar = Ical.Net.Calendar;
 
 namespace StudyCompanion.Core.Commands;
 
@@ -83,6 +85,7 @@ internal class Start : IBotCommand
         }
 
         Language lang = user?.Settings.Language ?? Language.English;
+        CultureInfo culture = lang.ToCultureInfo();
 
         string text = lang.GetLocalized(
             en => "Welcome to your Study Companion!".Bold().Newline() ,
@@ -110,8 +113,10 @@ internal class Start : IBotCommand
         }
         else if (Calendar.Load(cal.Data) is Calendar ical)
         {
+            DateOnly endOfWeek = GetEndOfWeek(DateOnly.FromDateTime(DateTime.Now));
+            
             CalDateTime start = new(DateTime.UtcNow);
-            CalDateTime end = new(DateTime.UtcNow.AddDays(options.Value.CalendarFutureDays));
+            CalDateTime end = new(endOfWeek.ToDateTime(TimeOnly.MaxValue));
             
             List<CalendarEvent> events = ical.Events
                 .Where(e => e.GetOccurrences(start).TakeWhileBefore(end).Any())
@@ -121,13 +126,13 @@ internal class Start : IBotCommand
 
             foreach (IGrouping<DateOnly, CalendarEvent> group in groups)
             {
-                text += $"[{group.Key.ToString("d")}]".Bold().Newline();
+                text += $"[{group.Key.ToString("dddd", culture)}]".Bold().Newline();
 
                 foreach (CalendarEvent ev in group)
                 {
                     TimeSpan duration = ev.End.SubtractExact(ev.Start);
                     
-                    text += $"-[{ev.Start?.Time}] {ev.Summary} ({duration.ToCompactString()}) {ev.Description?.Trim()}".Newline();
+                    text += $"{ev.Start?.Time?.ToString(culture)}: {ev.Summary} ({duration.ToCompactString()}) {ev.Description?.Trim()}".Newline();
                 }
             }
         }
@@ -188,5 +193,10 @@ internal class Start : IBotCommand
         if (string.IsNullOrWhiteSpace(text)) return false;
         if (!Uri.TryCreate(text, UriKind.Absolute, out var uri)) return false;
         return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+    }
+    private static DateOnly GetEndOfWeek(DateOnly date)
+    {
+        int daysUntilSunday = ((int)DayOfWeek.Sunday - (int)date.DayOfWeek + 7) % 7;
+        return date.AddDays(daysUntilSunday);
     }
 }
