@@ -1,13 +1,15 @@
-﻿using MinimalTelegramBot.Builder;
+﻿using Microsoft.EntityFrameworkCore;
+using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.StateMachine.Extensions;
 using StudyCompanion.Core.Contracts;
 using Serilog;
 using StudyCompanion.Core.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using StudyCompanion.Data;
+using StudyCompanion.Core.Data;
 using StudyCompanion.Shared.Options;
 using StudyCompanion.Shared.Extensions;
+using StudyCompanion.Shared.Services;
 
 namespace StudyCompanion.Core;
 
@@ -87,6 +89,13 @@ public static class Program
 
         return bot;
     }
+    
+    public static IServiceCollection AddData(this IServiceCollection services, string connectionString) => services
+        .AddDbContextPool<PostgresDbContext>(options => options.UseNpgsql(connectionString))
+        .AddPooledDbContextFactory<PostgresDbContext>(options => options.UseNpgsql(connectionString))
+        //.AddDbContextPool<PostgresDbContext>(options => options.UseInMemoryDatabase("StudyCompanion"))
+        //.AddPooledDbContextFactory<PostgresDbContext>(options => options.UseInMemoryDatabase("StudyCompanion"))
+        .AddScoped<IHelper, HelperService<PostgresDbContext>>();
 
     private static void ConfigureCommands(this BotApplication bot)
     {

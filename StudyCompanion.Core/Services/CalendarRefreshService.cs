@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using StudyCompanion.Data;
+using StudyCompanion.Core.Data;
 using StudyCompanion.Shared.Models;
 using StudyCompanion.Shared.Options;
 

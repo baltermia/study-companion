@@ -9,7 +9,7 @@ using StudyCompanion.Core.Builders;
 using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Extensions;
 using StudyCompanion.Core.Shared.Filters;
-using StudyCompanion.Data;
+using StudyCompanion.Core.Data;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Shared.Models;
 using StudyCompanion.Shared.Services;

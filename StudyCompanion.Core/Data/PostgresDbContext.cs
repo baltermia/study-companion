@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using NodaTime;
 using StudyCompanion.Shared.Models;
 
-namespace StudyCompanion.Data;
+namespace StudyCompanion.Core.Data;
 
 public class PostgresDbContext : DbContext
 {

@@ -11,7 +11,7 @@ using StudyCompanion.Core.Builders;
 using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Extensions;
 using StudyCompanion.Core.Shared.Filters;
-using StudyCompanion.Data;
+using StudyCompanion.Core.Data;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Shared.Models;
 using StudyCompanion.Shared.Options;
@@ -118,10 +118,20 @@ internal class Start : IBotCommand
             List<CalendarEvent> events = ical.Events
                 .Where(e => e.GetOccurrences(start).TakeWhileBefore(end).Any())
                 .ToList();
-            
-            foreach (CalendarEvent ev in events)
-                // show the calendar items in a list:
-                text += $"- {ev.Summary} [{ev.Start?.Date.ToString("d")}] {ev.Start?.Time} - {ev.End?.Time} {ev.Description?.Trim()}".Newline();
+
+            IEnumerable<IGrouping<DateOnly, CalendarEvent>> groups = events.GroupBy(ev => ev.Start.Date);
+
+            foreach (IGrouping<DateOnly, CalendarEvent> group in groups)
+            {
+                text += $"[{group.Key.ToString("d")}]".Bold().Newline();
+
+                foreach (CalendarEvent ev in group)
+                {
+                    TimeSpan duration = ev.End.SubtractExact(ev.Start);
+                    
+                    text += $"-[{ev.Start?.Time}] {ev.Summary} ({duration.ToCompactString()}) {ev.Description?.Trim()}".Newline();
+                }
+            }
         }
         else
         {

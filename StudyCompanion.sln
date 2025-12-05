@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudyCompanion.Core", "Stud
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudyCompanion.Shared", "StudyCompanion.Shared\StudyCompanion.Shared.csproj", "{40BA415F-DDCC-413F-B118-C27627EB74FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudyCompanion.Data", "StudyCompanion.Data\StudyCompanion.Data.csproj", "{15AEFBC5-3ADF-4DEF-9476-9E83C93091CA}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,9 +24,5 @@ Global
 		{40BA415F-DDCC-413F-B118-C27627EB74FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40BA415F-DDCC-413F-B118-C27627EB74FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40BA415F-DDCC-413F-B118-C27627EB74FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{15AEFBC5-3ADF-4DEF-9476-9E83C93091CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15AEFBC5-3ADF-4DEF-9476-9E83C93091CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15AEFBC5-3ADF-4DEF-9476-9E83C93091CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15AEFBC5-3ADF-4DEF-9476-9E83C93091CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
