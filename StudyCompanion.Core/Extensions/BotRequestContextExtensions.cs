@@ -1,7 +1,7 @@
-﻿using StudyCompanion.Core.Builders;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using StudyCompanion.Core.Builders;
 using MinimalTelegramBot;
 using MinimalTelegramBot.StateMachine.Extensions;
-using StackExchange.Redis;
 using Telegram.Bot;
 
 namespace StudyCompanion.Core.Extensions;
@@ -15,20 +15,18 @@ public static class BotRequestContextExtensions
         if (!ResultBuilder.USE_DELETE)
             return;
 
-        IDatabase db = context.Services.GetRequiredService<IConnectionMultiplexer>().GetDatabase();
+        IDistributedCache cache = context.Services.GetRequiredService<IDistributedCache>();
 
         string key = context.ChatId.GetRedisKey();
 
-        RedisValue[] values = await db.ListRangeAsync(key);
+        List<int> msgs = await cache.GetMessageIdsAsync(key);
 
-        if (values.Length == 0)
+        if (msgs.Count == 0)
             return;
 
-        int[] messageIds = Array.ConvertAll(values, item => (int)item);
+        await context.Client.DeleteMessages(context.ChatId, msgs);
 
-        await context.Client.DeleteMessages(context.ChatId, messageIds);
-
-        await db.KeyDeleteAsync(key);
+        await cache.RemoveAsync(key);
     }
 }
 

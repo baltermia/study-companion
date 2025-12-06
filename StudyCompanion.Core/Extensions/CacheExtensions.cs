@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace StudyCompanion.Core.Extensions;
 
@@ -14,6 +15,27 @@ public static class CacheExtensions
             await cache.SetStringAsync(key, dummyValue);
 
         return new KeyTransaction(cache, key, exists);
+    }
+    
+    public static async Task AddMessageIdAsync(this IDistributedCache cache, string key, int msgId, DistributedCacheEntryOptions? options = null)
+    {
+        List<int> list = await cache.GetMessageIdsAsync(key);
+
+        list.Add(msgId);
+
+        byte[] newBytes = JsonSerializer.SerializeToUtf8Bytes(list);
+        
+        await cache.SetAsync(key, newBytes, options ?? new DistributedCacheEntryOptions()); // set options/expiry as needed
+    }
+
+    public static async Task<List<int>> GetMessageIdsAsync(this IDistributedCache cache, string key)
+    {
+        byte[]? bytes = await cache.GetAsync(key);
+        
+        return
+            bytes == null 
+                ? [] 
+                : JsonSerializer.Deserialize<List<int>>(bytes) ?? [];
     }
 }
 

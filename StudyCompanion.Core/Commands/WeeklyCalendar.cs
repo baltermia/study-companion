@@ -90,6 +90,8 @@ public class WeeklyCalendar : IBotCommand
 
         if (await context.GetState<CurrentCalendarState.WeekOffset>() is not CurrentCalendarState.WeekOffset state)
             return await OnCalendar(context, helper);
+        
+        await context.DropPrevious();
 
         state.Offset -= 1;
         
@@ -105,6 +107,8 @@ public class WeeklyCalendar : IBotCommand
 
         if (await context.GetState<CurrentCalendarState.WeekOffset>() is not CurrentCalendarState.WeekOffset state)
             return await OnCalendar(context, helper);
+        
+        await context.DropPrevious();
 
         state.Offset += 1;
         

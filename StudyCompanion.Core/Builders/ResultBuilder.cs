@@ -1,16 +1,16 @@
-﻿using MinimalTelegramBot;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using MinimalTelegramBot;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 using TParseMode = Telegram.Bot.Types.Enums.ParseMode;
 using TType = Telegram.Bot.Types;
-using StackExchange.Redis;
 using StudyCompanion.Core.Extensions;
 
 namespace StudyCompanion.Core.Builders;
 
 public class ResultBuilder : MinimalTelegramBot.Results.IResult
 {
-    public static readonly bool USE_DELETE = false;
+    public static readonly bool USE_DELETE = true;
     public static readonly TParseMode DEFAULT_MODE = TParseMode.Html;
 
     public string? Text { get; set; }
@@ -45,9 +45,8 @@ public class ResultBuilder : MinimalTelegramBot.Results.IResult
 
         if (USE_DELETE && Delete)
             await context.Services
-                .GetRequiredService<IConnectionMultiplexer>()
-                .GetDatabase()
-                .ListRightPushAsync(context.ChatId.GetRedisKey(), msg.Id);
+                .GetRequiredService<IDistributedCache>()
+                .AddMessageIdAsync(context.ChatId.GetRedisKey(), msg.Id);
     }
 }
 

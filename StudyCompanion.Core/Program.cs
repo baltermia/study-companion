@@ -43,11 +43,11 @@ public static class Program
         string redisConnection = builder.Configuration.GetConnectionString("RedisConnection")!;
 
         builder.Services
-            //.AddStackExchangeRedisCache(options =>
-            //{
-            //    options.Configuration = "localhost:6379"; // your redis connection
-            //})
-            .AddDistributedMemoryCache()
+            .AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnection; // your redis connection
+            })
+            //.AddDistributedMemoryCache()
                 
             .AddHostedService<CalendarRefreshService>()
             .AddData(connectionString)
