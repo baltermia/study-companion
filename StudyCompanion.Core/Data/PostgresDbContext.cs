@@ -1,13 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using MinimalTelegramBot.StateMachine.Persistence.EntityFrameworkCore;
 using NodaTime;
 using StudyCompanion.Shared.Models;
 
 namespace StudyCompanion.Core.Data;
 
-public class PostgresDbContext : DbContext
+public class PostgresDbContext : DbContext, IStateMachineDbContext
 {
     public DbSet<User> Users { get; set; }
+
+    public DbSet<MinimalTelegramBotState> MinimalTelegramBotStates { get; set; }
 
     public PostgresDbContext(DbContextOptions options)
         : base(options)

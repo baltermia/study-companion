@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.StateMachine.Extensions;
+using MinimalTelegramBot.StateMachine.Persistence.EntityFrameworkCore;
 using StudyCompanion.Core.Contracts;
 using Serilog;
 using StudyCompanion.Core.Services;
@@ -35,7 +36,10 @@ public static class Program
 
         builder.ConfigureAppsettings();
 
-        builder.Services.AddStateMachine();
+        builder.Services
+            .AddStateMachine()
+            .PersistStatesToDbContext<PostgresDbContext>()
+            .WithHybridCache();
 
         builder.WebHost.UseKestrelHttpsConfiguration();
 
@@ -80,6 +84,15 @@ public static class Program
         
         // set commands
         await SetTelegramCommandsAsync(bot.Services);
+        
+        await using (AsyncServiceScope scope = bot.Services.CreateAsyncScope())
+        {
+            PostgresDbContext db = scope.ServiceProvider.GetRequiredService<PostgresDbContext>();
+            await db.Database.EnsureCreatedAsync();
+            
+            if ((await db.Database.GetPendingMigrationsAsync()).Any())
+                await db.Database.MigrateAsync();
+        }
 
         await bot.RunAsync();
     }
