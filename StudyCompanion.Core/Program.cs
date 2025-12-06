@@ -7,9 +7,9 @@ using StudyCompanion.Core.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using StudyCompanion.Core.Data;
+using StudyCompanion.Shared.Contracts;
 using StudyCompanion.Shared.Options;
 using StudyCompanion.Shared.Extensions;
-using StudyCompanion.Shared.Services;
 
 namespace StudyCompanion.Core;
 
@@ -70,6 +70,7 @@ public static class Program
         // commands
         bot
             .ConfigureCommand<Commands.Settings>()
+            .ConfigureCommand<Commands.WeeklyCalendar>()
             .ConfigureCommand<Commands.Start>();
             
         // configure commands and callbacks

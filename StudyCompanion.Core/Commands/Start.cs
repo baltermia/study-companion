@@ -13,10 +13,10 @@ using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Extensions;
 using StudyCompanion.Core.Shared.Filters;
 using StudyCompanion.Core.Data;
+using StudyCompanion.Shared.Contracts;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Shared.Models;
 using StudyCompanion.Shared.Options;
-using StudyCompanion.Shared.Services;
 using IResult = MinimalTelegramBot.Results.IResult;
 using Results = MinimalTelegramBot.Results.Results;
 using Telegram.Bot.Types.Enums;
@@ -40,7 +40,10 @@ internal class Start : IBotCommand
             new(lang.GetLocalized(en =>"⚙️ Settings", de => "⚙️ Einstellungen" )),
         ];
 
-        List<KeyboardButton> row2 = [];
+        List<KeyboardButton> row2 = 
+        [
+            new(lang.GetLocalized(en => "📅 Weekly Calendar", de => "📅 Wöchentlicher Kalender")),
+        ];
 
         if (role is Role.Mod or Role.Admin)
             row2.Add(new KeyboardButton("🛡️ Admin"));
@@ -111,36 +114,7 @@ internal class Start : IBotCommand
                       """
             );
         }
-        else if (Calendar.Load(cal.Data) is Calendar ical)
-        {
-            DateOnly endOfWeek = GetEndOfWeek(DateOnly.FromDateTime(DateTime.Now));
-            
-            CalDateTime start = new(DateTime.UtcNow);
-            CalDateTime end = new(endOfWeek.ToDateTime(TimeOnly.MaxValue));
-            
-            List<CalendarEvent> events = ical.Events
-                .Where(e => e.GetOccurrences(start).TakeWhileBefore(end).Any())
-                .ToList();
-
-            IEnumerable<IGrouping<DateOnly, CalendarEvent>> groups = events.GroupBy(ev => ev.Start.Date);
-
-            foreach (IGrouping<DateOnly, CalendarEvent> group in groups)
-            {
-                text += $"[{group.Key.ToString("dddd", culture)}]".Bold().Newline();
-
-                foreach (CalendarEvent ev in group)
-                {
-                    TimeSpan duration = ev.End.SubtractExact(ev.Start);
-                    
-                    text += $"{ev.Start?.Time?.ToString(culture)}: {ev.Summary} ({duration.ToCompactString()}) {ev.Description?.Trim()}".Newline();
-                }
-            }
-        }
-        else
-        {
-            text += "Invalid Calendar";
-        }
-
+        
         return 
             text.AsMarkup()
                 .WithButtons(GetButtons(lang, user?.Role))

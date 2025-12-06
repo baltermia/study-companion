@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using NodaTime;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Shared.Models;
-using Microsoft.Extensions.Options;
 using StudyCompanion.Shared.Options;
-using NodaTime;
 
-namespace StudyCompanion.Shared.Services;
+namespace StudyCompanion.Shared.Contracts;
 
 public class NewUserEventArgs(User user) : EventArgs
 {
@@ -16,12 +16,28 @@ public interface IHelper
 {
     public static event AsyncEventHandler<NewUserEventArgs>? NewUser;
 
+    public Task<User?> GetUserAsync(long userId, bool withCalendar = false);
     public Task<User> GetUserAsync(TelegramUser telegramUser, bool withCalendar = false);
 }
 
 public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<UserOptions> options) : IHelper
     where T : DbContext
 {
+    public async Task<User?> GetUserAsync(long userId, bool withCalendar = false)
+    {
+        await using T db = await contextFactory.CreateDbContextAsync();
+        
+        if (withCalendar)
+            return await db.Set<User>()
+                .Include(p => p.Settings)
+                    .ThenInclude(s => s.Calender)
+                .FirstOrDefaultAsync(p => p.TelegramUser.Id == userId);
+        
+        return await db.Set<User>()
+            .Include(p => p.Settings)
+            .FirstOrDefaultAsync(p => p.TelegramUser.Id == userId);
+    }
+    
     public async Task<User> GetUserAsync(TelegramUser telegramUser, bool withCalendar = false)
     {
         await using T context = await contextFactory.CreateDbContextAsync();
