@@ -10,6 +10,7 @@ using StudyCompanion.Core.Data;
 using StudyCompanion.Shared.Contracts;
 using StudyCompanion.Shared.Options;
 using StudyCompanion.Shared.Extensions;
+using StudyCompanion.Core.Commands;
 
 namespace StudyCompanion.Core;
 
@@ -69,9 +70,10 @@ public static class Program
 
         // commands
         bot
-            .ConfigureCommand<Commands.Settings>()
-            .ConfigureCommand<Commands.WeeklyCalendar>()
-            .ConfigureCommand<Commands.Start>();
+            .ConfigureCommand<SettingsCommand>()
+            .ConfigureCommand<CalendarCommand>()
+            .ConfigureCommand<HomeworkCommand>()
+            .ConfigureCommand<StartCommand>();
             
         // configure commands and callbacks
         bot.ConfigureCommands();

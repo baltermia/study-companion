@@ -29,12 +29,14 @@ public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<User
         
         if (withCalendar)
             return await db.Set<User>()
+                .Include(p => p.Homework)
                 .Include(p => p.Settings)
                     .ThenInclude(s => s.Calender)
                 .FirstOrDefaultAsync(p => p.TelegramUser.Id == userId);
         
         return await db.Set<User>()
             .Include(p => p.Settings)
+            .Include(p => p.Homework)
             .FirstOrDefaultAsync(p => p.TelegramUser.Id == userId);
     }
     
@@ -47,6 +49,7 @@ public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<User
             user =
                 await context
                     .Set<User>()
+                    .Include(p => p.Homework)
                     .Include(p => p.Settings)
                         .ThenInclude(s => s.Calender)
                     .FirstOrDefaultAsync(p => p.TelegramUser.Id == telegramUser.Id);
@@ -54,6 +57,7 @@ public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<User
             user =
                 await context
                     .Set<User>()
+                    .Include(p => p.Homework)
                     .Include(p => p.Settings)
                     .FirstOrDefaultAsync(p => p.TelegramUser.Id == telegramUser.Id);
 

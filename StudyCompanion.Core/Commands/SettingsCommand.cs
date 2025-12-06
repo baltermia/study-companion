@@ -20,7 +20,7 @@ using Results = MinimalTelegramBot.Results.Results;
 
 namespace StudyCompanion.Core.Commands;
 
-internal class Settings : IBotCommand
+internal class SettingsCommand : IBotCommand
 {
     public static List<CommandDescription> Commands { get; } =
     [
@@ -155,7 +155,7 @@ internal class Settings : IBotCommand
 
     public static async Task<IResult> OnLanguage(BotRequestContext context, IHelper helper, PostgresDbContext db)
     {
-        if (await db.Users.Include(p => p.Settings).FirstOrDefaultAsync(p => p.TelegramUser.Id == context.ChatId) is not User user)
+        if (await helper.GetUserAsync(context.ChatId) is not User user)
             return Results.Empty;
 
         await context.SetState(new SetLanguageState.Setting());
@@ -170,7 +170,7 @@ internal class Settings : IBotCommand
 
     public static async Task<IResult> OnLanguageSelect(BotRequestContext context, IHelper helper, PostgresDbContext db)
     {
-        if (await db.Users.Include(p => p.Settings).FirstOrDefaultAsync(p => p.TelegramUser.Id == context.ChatId) is not User user)
+        if (await helper.GetUserAsync(context.ChatId) is not User user)
             return Results.Empty;
 
         if (await context.GetState<SetLanguageState.Setting>() is null)
@@ -190,7 +190,7 @@ internal class Settings : IBotCommand
             de => $"✔ Sprache wurde auf {language.ToLanguageString().Bold()} gesetzt."
         );
 
-        return text.AsMarkup().Delete().WithButtons(Start.GetButtons(language, user.Role));
+        return text.AsMarkup().Delete().WithButtons(StartCommand.GetButtons(language, user.Role));
     }
     #endregion
 
@@ -204,7 +204,7 @@ internal class Settings : IBotCommand
 
     public static async Task<IResult> OnTimeZone(BotRequestContext context, IHelper helper, PostgresDbContext db)
     {
-        if (await db.Users.Include(p => p.Settings).FirstOrDefaultAsync(p => p.TelegramUser.Id == context.ChatId) is not User user)
+        if (await helper.GetUserAsync(context.ChatId) is not User user)
             return Results.Empty;
 
         await context.SetState(new SetTimezoneState.Setting());

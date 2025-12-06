@@ -19,6 +19,8 @@ public class User
 
     public required Settings Settings { get; set; }
 
+    public List<Homework> Homework { get; set; } = [];
+
     public Role Role { get; set; } = Role.User;
 
 }

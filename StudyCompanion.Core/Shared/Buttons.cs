@@ -10,8 +10,19 @@ public static class Buttons
     {
         InlineKeyboard = 
         [[
-            InlineKeyboardButton.WithCallbackData("✔️ " + lang.GetLocalized(de => "Ja", en => "Yes"), prefix + "yes"),
-            InlineKeyboardButton.WithCallbackData("❌ " + lang.GetLocalized(de => "Nein", en => "No"), prefix + "no"),
+            InlineKeyboardButton.WithCallbackData("✔️ " + lang.GetLocalized(en => "Yes", de => "Ja"), prefix + "yes"),
+            InlineKeyboardButton.WithCallbackData("❌ " + lang.GetLocalized(en => "No", de => "Nein"), prefix + "no"),
         ]],
     };
+    
+    public static bool? ParseYesNoCallback(string? data, string prefix)
+    {
+        if (data == prefix + "yes")
+            return true;
+        
+        if (data == prefix + "no")
+            return false;
+        
+        return null;
+    }
 }

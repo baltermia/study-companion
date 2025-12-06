@@ -25,7 +25,7 @@ using Calendar = Ical.Net.Calendar;
 
 namespace StudyCompanion.Core.Commands;
 
-internal class Start : IBotCommand
+internal class StartCommand : IBotCommand
 {
     public static List<CommandDescription> Commands { get; } =
     [
@@ -43,6 +43,7 @@ internal class Start : IBotCommand
         List<KeyboardButton> row2 = 
         [
             new(lang.GetLocalized(en => "📅 Weekly Calendar", de => "📅 Wöchentlicher Kalender")),
+            new(lang.GetLocalized(en => "📌 Homework", de => "📌 Hausaufgaben")),
         ];
 
         if (role is Role.Mod or Role.Admin)

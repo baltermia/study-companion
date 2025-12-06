@@ -22,7 +22,7 @@ using Results = MinimalTelegramBot.Results.Results;
 
 namespace StudyCompanion.Core.Commands;
 
-public class WeeklyCalendar : IBotCommand
+public class CalendarCommand : IBotCommand
 {
     public static List<CommandDescription> Commands { get; } =
     [
