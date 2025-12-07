@@ -1,6 +1,4 @@
 using System.Globalization;
-using Microsoft.Recognizers.Text;
-using Microsoft.Recognizers.Text.DateTime;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.Handling;
@@ -25,6 +23,10 @@ namespace StudyCompanion.Core.Commands;
 
 public class HomeworkCommand : IBotCommand
 {
+    public static string GetTitle(Language lang) => lang.GetLocalized(
+        en => "📌 Homework",
+        de => "📌 Hausaufgaben");
+    
     public static List<CommandDescription> Commands { get; } =
     [
         new("/homework", "📌 Homework", CommandChat.Private),
@@ -52,10 +54,10 @@ public class HomeworkCommand : IBotCommand
         bot.HandleCommand("/homework", OnHomework)
             .FilterChatType(ChatType.Private);
 
-        bot.HandleMessageText("📌 Hausaufgaben", OnHomework)
+        bot.HandleMessageText(GetTitle(Language.English), OnHomework)
             .FilterChatType(ChatType.Private);
 
-        bot.HandleMessageText("📌 Homework", OnHomework)
+        bot.HandleMessageText(GetTitle(Language.German), OnHomework)
             .FilterChatType(ChatType.Private);
     }
 

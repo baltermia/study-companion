@@ -1,7 +1,3 @@
-using System.Globalization;
-using Ical.Net;
-using Ical.Net.CalendarComponents;
-using Ical.Net.DataTypes;
 using Microsoft.Extensions.Options;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
@@ -27,6 +23,8 @@ namespace StudyCompanion.Core.Commands;
 
 internal class StartCommand : IBotCommand
 {
+    public static string GetTitle(Language lang) => "🏠 Home";
+    
     public static List<CommandDescription> Commands { get; } =
     [
         new("/start", "🏠 Bot Start Dialog", CommandChat.Private),
@@ -36,14 +34,19 @@ internal class StartCommand : IBotCommand
     {
         List<KeyboardButton> row1 =
         [
-            new(lang.GetLocalized(en =>"🏠 Home", de => "🏠 Home" )),
-            new(lang.GetLocalized(en =>"⚙️ Settings", de => "⚙️ Einstellungen" )),
+            new(GetTitle(lang)),
+            new(SettingsCommand.GetTitle(lang)),
         ];
 
         List<KeyboardButton> row2 = 
         [
-            new(lang.GetLocalized(en => "📅 Weekly Calendar", de => "📅 Wöchentlicher Kalender")),
-            new(lang.GetLocalized(en => "📌 Homework", de => "📌 Hausaufgaben")),
+            new(CalendarCommand.GetTitle(lang)),
+            new(HomeworkCommand.GetTitle(lang)),
+        ];
+        
+        List<KeyboardButton> row3 = 
+        [
+            new(SummaryCommand.GetTitle(lang)),
         ];
 
         if (role is Role.Mod or Role.Admin)
@@ -51,9 +54,10 @@ internal class StartCommand : IBotCommand
 
         return new()
         {
-            Keyboard = [row1, row2],
+            Keyboard = [row1, row2, row3],
             ResizeKeyboard = true,
             IsPersistent = true,
+            OneTimeKeyboard = false,
         };
     }
 
@@ -62,7 +66,7 @@ internal class StartCommand : IBotCommand
         bot.HandleCommand("/start", OnStart)
             .FilterChatType(ChatType.Private);
 
-        bot.HandleMessageText("🏠 Home", OnStart)
+        bot.HandleMessageText(GetTitle(Language.English), OnStart)
             .FilterChatType(ChatType.Private);
         
         bot.HandleUpdateType(UpdateType.Message, OnCalender)
@@ -85,18 +89,17 @@ internal class StartCommand : IBotCommand
         // ensures that the account gets created
         if (context.Update.Message?.ConvertMessage() is Message msg && msg.Chat is TelegramUser telegramUser)
         {
-            user = await helper.GetUserAsync(telegramUser, withCalendar: true);
+            user = await helper.GetUserAsync(telegramUser);
         }
 
         Language lang = user?.Settings.Language ?? Language.English;
-        CultureInfo culture = lang.ToCultureInfo();
 
         string text = lang.GetLocalized(
             en => "Welcome to your Study Companion!".Bold().Newline() ,
             de => "Willkommen, ich bin dein Study Companion!".Bold().Newline()
         );
 
-        if (user?.Settings.Calender is not Calender cal)
+        if (user?.Settings.Calender is not Calender)
         {
             // ical is needed
             
@@ -168,10 +171,5 @@ internal class StartCommand : IBotCommand
         if (string.IsNullOrWhiteSpace(text)) return false;
         if (!Uri.TryCreate(text, UriKind.Absolute, out var uri)) return false;
         return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
-    }
-    private static DateOnly GetEndOfWeek(DateOnly date)
-    {
-        int daysUntilSunday = ((int)DayOfWeek.Sunday - (int)date.DayOfWeek + 7) % 7;
-        return date.AddDays(daysUntilSunday);
     }
 }

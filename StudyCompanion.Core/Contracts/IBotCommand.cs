@@ -1,4 +1,5 @@
 ﻿using MinimalTelegramBot.Builder;
+using StudyCompanion.Shared.Models;
 
 namespace StudyCompanion.Core.Contracts;
 
@@ -15,6 +16,8 @@ public record CommandDescription(string Command, string Description, CommandChat
 
 public interface IBotCommand
 {
+    public static abstract string GetTitle(Language lang);
+    
     public static abstract List<CommandDescription> Commands { get; }
 
     public static abstract void ConfigureCommands(BotApplication bot);

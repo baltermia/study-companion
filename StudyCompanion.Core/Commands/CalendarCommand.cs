@@ -24,6 +24,10 @@ namespace StudyCompanion.Core.Commands;
 
 public class CalendarCommand : IBotCommand
 {
+    public static string GetTitle(Language lang) => lang.GetLocalized(
+        en => "📅 Weekly Calendar",
+        de => "📅 Wöchentlicher Kalender");
+    
     public static List<CommandDescription> Commands { get; } =
     [
         new("/calendar", "📅 Weekly Calendar", CommandChat.Private),
@@ -44,10 +48,10 @@ public class CalendarCommand : IBotCommand
         bot.HandleCommand("/calendar", OnCalendar)
             .FilterChatType(ChatType.Private);
 
-        bot.HandleMessageText("📅 Wöchentlicher Kalender", OnCalendar)
+        bot.HandleMessageText(GetTitle(Language.German), OnCalendar)
             .FilterChatType(ChatType.Private);
 
-        bot.HandleMessageText("📅 Weekly Calendar", OnCalendar)
+        bot.HandleMessageText(GetTitle(Language.English), OnCalendar)
             .FilterChatType(ChatType.Private);
     }
     
@@ -169,7 +173,7 @@ public class CalendarCommand : IBotCommand
             .AsMarkup();
     }
 
-    private static (DateTime Start, DateTime End) GetWeekRange(int weekOffset, DateTime? referenceDate = null)
+    public static (DateTime Start, DateTime End) GetWeekRange(int weekOffset, DateTime? referenceDate = null)
     {
         // Normalize to date portion while preserving Kind if possible
         

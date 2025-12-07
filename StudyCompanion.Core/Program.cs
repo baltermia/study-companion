@@ -12,6 +12,7 @@ using StudyCompanion.Shared.Contracts;
 using StudyCompanion.Shared.Options;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Core.Commands;
+using OpenAI.Chat;
 
 namespace StudyCompanion.Core;
 
@@ -35,7 +36,10 @@ public static class Program
         });
 
         builder.ConfigureAppsettings();
-
+        
+        builder.Services.AddSingleton(new ChatClient(model: "gpt-4o", apiKey: builder.Configuration.GetRequiredSection("OpenAI:Key").Value));
+        builder.Services.AddTransient<IAiService, OpenAiService>();
+        
         builder.Services
             .AddStateMachine()
             .PersistStatesToDbContext<PostgresDbContext>()
@@ -74,6 +78,7 @@ public static class Program
 
         // commands
         bot
+            .ConfigureCommand<SummaryCommand>()
             .ConfigureCommand<SettingsCommand>()
             .ConfigureCommand<CalendarCommand>()
             .ConfigureCommand<HomeworkCommand>()

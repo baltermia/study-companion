@@ -22,6 +22,10 @@ namespace StudyCompanion.Core.Commands;
 
 internal class SettingsCommand : IBotCommand
 {
+    public static string GetTitle(Language lang) => lang.GetLocalized(
+        en => "⚙️ Settings",
+        de => "⚙️ Einstellungen");
+    
     public static List<CommandDescription> Commands { get; } =
     [
         new("/settings", "⚙️ Bot Settings", CommandChat.Private),
@@ -96,10 +100,10 @@ internal class SettingsCommand : IBotCommand
         bot.HandleCommand("/settings", OnSettings)
             .FilterChatType(ChatType.Private);
 
-        bot.HandleMessageText("⚙️ Settings", OnSettings)
+        bot.HandleMessageText(GetTitle(Language.German), OnSettings)
             .FilterChatType(ChatType.Private);
 
-        bot.HandleMessageText("⚙️ Einstellungen", OnSettings)
+        bot.HandleMessageText(GetTitle(Language.English), OnSettings)
             .FilterChatType(ChatType.Private);
     }
 
