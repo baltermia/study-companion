@@ -10,7 +10,7 @@ namespace StudyCompanion.Core.Builders;
 
 public class ResultBuilder : MinimalTelegramBot.Results.IResult
 {
-    public static readonly bool USE_DELETE = true;
+    public static readonly bool USE_DELETE = false;
     public static readonly TParseMode DEFAULT_MODE = TParseMode.Html;
 
     public string? Text { get; set; }

@@ -88,12 +88,10 @@ internal class StartCommand : IBotCommand
 
         // ensures that the account gets created
         if (context.Update.Message?.ConvertMessage() is Message msg && msg.Chat is TelegramUser telegramUser)
-        {
             user = await helper.GetUserAsync(telegramUser);
-        }
 
         Language lang = user?.Settings.Language ?? Language.English;
-
+        
         string text = lang.GetLocalized(
             en => "Welcome to your Study Companion!".Bold().Newline() ,
             de => "Willkommen, ich bin dein Study Companion!".Bold().Newline()

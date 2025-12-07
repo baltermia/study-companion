@@ -155,6 +155,8 @@ public class CalendarCommand : IBotCommand
                 en => "You don't have any lectures this week 😄",
                 de => "Du hast diese Woche keine Lektionen 😄");
 
+        string tz = user.Settings.TimeZone.Id;
+
         foreach (IGrouping<DateOnly, CalendarEvent> group in groups)
         {
             text = text.Newline() + $"[{group.Key.ToString("dddd", culture)}]".Bold().Newline();
@@ -163,7 +165,7 @@ public class CalendarCommand : IBotCommand
             {
                 TimeSpan? duration = ev.End?.SubtractExact(ev.Start ?? ev.End);
                     
-                text += $"{ev.Start?.Time?.ToString(culture)}: {ev.Summary} ({duration?.ToCompactString()}) {ev.Description?.Trim()}".Newline();
+                text += $"{ev.Start?.ToTimeZone(tz).Time?.ToString(culture)}: {ev.Summary} ({duration?.ToCompactString()}) {ev.Description?.Trim()}".Newline();
             }
         }
 
