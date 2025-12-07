@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>81aa9624-ed32-40ab-8750-b23d59167d82</UserSecretsId>
+    <LangVersion>14</LangVersion>
   </PropertyGroup>
 
     <ItemGroup>
@@ -31,6 +32,8 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.11" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+        <PackageReference Include="TickerQ" Version="9.0.1" />
+        <PackageReference Include="TickerQ.EntityFrameworkCore" Version="9.0.1" />
     </ItemGroup>
 
     <ItemGroup>

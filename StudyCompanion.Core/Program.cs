@@ -13,6 +13,10 @@ using StudyCompanion.Shared.Options;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Core.Commands;
 using OpenAI.Chat;
+using TickerQ.DependencyInjection;
+using TickerQ.EntityFrameworkCore.Customizer;
+using TickerQ.EntityFrameworkCore.DependencyInjection;
+using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace StudyCompanion.Core;
 
@@ -34,6 +38,10 @@ public static class Program
                 ContentRootPath = contentRoot,
             }
         });
+        
+        // these are required for the bot to run, therefore the !
+        string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+        string redisConnection = builder.Configuration.GetConnectionString("RedisConnection")!;
 
         builder.ConfigureAppsettings();
         
@@ -44,12 +52,8 @@ public static class Program
             .AddStateMachine()
             .PersistStatesToDbContext<PostgresDbContext>()
             .WithHybridCache();
-
+        
         builder.WebHost.UseKestrelHttpsConfiguration();
-
-        // these are required for the bot to run, therefore the !
-        string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
-        string redisConnection = builder.Configuration.GetConnectionString("RedisConnection")!;
 
         builder.Services
             .AddStackExchangeRedisCache(options =>
@@ -71,8 +75,17 @@ public static class Program
             //.AddHostedService<PayoutCheckerService>();
 
         builder.Logging.ConfigureLogging(builder.Configuration);
+        
+        builder.Services.AddTickerQ(options =>
+        {
+            options.AddOperationalStore(efOptions =>
+            {
+                efOptions.UseApplicationDbContext<PostgresDbContext>(ConfigurationType.UseModelCustomizer);
+                efOptions.SetDbContextPoolSize(128);
+            });
+        });
 
-        BotApplication bot = builder.Build();
+       BotApplication bot = builder.Build();
 
         bot.UseStateMachine();
 
