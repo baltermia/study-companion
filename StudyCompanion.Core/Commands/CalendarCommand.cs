@@ -2,11 +2,13 @@ using System.Globalization;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+using Ical.Net.Evaluation;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.Handling;
 using MinimalTelegramBot.StateMachine.Abstractions;
 using MinimalTelegramBot.StateMachine.Extensions;
+using NodaTime;
 using StudyCompanion.Core.Builders;
 using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Extensions;
@@ -129,7 +131,9 @@ public class CalendarCommand : IBotCommand
         if (Calendar.Load(user.Settings.Calender.Data) is not Calendar ical)
             return "Your Calendar seems to be invalid".AsMarkup();
         
-        (DateTime start, DateTime end) = GetWeekRange(offset);
+        DateTimeZone tz = user.Settings.TimeZone;
+        
+        (DateTime start, DateTime end) = GetWeekRange(offset, SystemClock.Instance.GetCurrentInstant().InZone(tz).ToDateTimeUnspecified());
 
         CalDateTime calStart = new(start);
         CalDateTime calEnd = new(end);
@@ -138,7 +142,7 @@ public class CalendarCommand : IBotCommand
             .Where(e => e.GetOccurrences(calStart).TakeWhileBefore(calEnd).Any())
             .ToList();
 
-        IEnumerable<IGrouping<DateOnly, CalendarEvent>> groups = events.GroupBy(ev => ev.Start.Date);
+        IEnumerable<IGrouping<DateOnly, CalendarEvent>> groups = events.GroupBy(ev => ev.Start.ToTimeZone(tz.Id).Date);
 
         Language lang = user.Settings.Language;
         CultureInfo culture = lang.ToCultureInfo();
@@ -155,17 +159,15 @@ public class CalendarCommand : IBotCommand
                 en => "You don't have any lectures this week 😄",
                 de => "Du hast diese Woche keine Lektionen 😄");
 
-        string tz = user.Settings.TimeZone.Id;
-
-        foreach (IGrouping<DateOnly, CalendarEvent> group in groups)
+        foreach (IGrouping<DateOnly, CalendarEvent> group in groups.OrderBy(g => g.Key))
         {
             text = text.Newline() + $"[{group.Key.ToString("dddd", culture)}]".Bold().Newline();
 
-            foreach (CalendarEvent ev in group)
+            foreach (CalendarEvent ev in group.OrderBy(d => d.Start))
             {
                 TimeSpan? duration = ev.End?.SubtractExact(ev.Start ?? ev.End);
                     
-                text += $"{ev.Start?.ToTimeZone(tz).Time?.ToString(culture)}: {ev.Summary} ({duration?.ToCompactString()}) {ev.Description?.Trim()}".Newline();
+                text += $"{ev.Start?.ToTimeZone(tz.Id).Time?.ToString(culture)}: {ev.Summary} ({duration?.ToCompactString()}) {ev.Description?.Trim()}".Newline();
             }
         }
 
