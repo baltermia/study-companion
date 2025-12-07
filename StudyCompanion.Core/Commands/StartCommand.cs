@@ -97,7 +97,7 @@ internal class StartCommand : IBotCommand
             de => "Willkommen, ich bin dein Study Companion!".Bold().Newline()
         );
 
-        if (user?.Settings.Calender is not Calender)
+        if (user?.Settings.CalenderId == null)
         {
             // ical is needed
             

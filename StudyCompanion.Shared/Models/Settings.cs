@@ -19,5 +19,6 @@ public class Settings
 
     public required DateTimeZone TimeZone { get; set; }
     
+    public int? CalenderId { get; set; }
     public Calender? Calender { get; set; }
 }
