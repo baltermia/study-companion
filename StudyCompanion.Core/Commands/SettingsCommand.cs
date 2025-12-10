@@ -1,4 +1,7 @@
+using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.Handling;
@@ -10,11 +13,16 @@ using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Extensions;
 using StudyCompanion.Core.Shared.Filters;
 using StudyCompanion.Core.Data;
+using StudyCompanion.Core.Jobs;
 using StudyCompanion.Shared.Contracts;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Shared.Models;
+using StudyCompanion.Shared.Options;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TickerQ.Utilities;
+using TickerQ.Utilities.Entities;
+using TickerQ.Utilities.Interfaces.Managers;
 using IResult = MinimalTelegramBot.Results.IResult;
 using Results = MinimalTelegramBot.Results.Results;
 
@@ -198,7 +206,7 @@ internal class SettingsCommand : IBotCommand
     }
     #endregion
 
-    #region Set Language
+    #region Set Timezone
     [StateGroup(nameof(SetTimezoneState))]
     public static class SetTimezoneState
     {
@@ -221,9 +229,14 @@ internal class SettingsCommand : IBotCommand
         return text.AsMarkup().WithButtons(GetTimeZoneButtons()).Delete();
     }
 
-    public static async Task<IResult> OnTimeZoneSelect(BotRequestContext context, IHelper helper, PostgresDbContext db)
+    public static async Task<IResult> OnTimeZoneSelect(
+        BotRequestContext context, 
+        IHelper helper, 
+        PostgresDbContext db, 
+        ITimeTickerManager<TimeTickerEntity> ticker, 
+        IOptions<UserOptions> options)
     {
-        if (await db.Users.Include(p => p.Settings).FirstOrDefaultAsync(p => p.TelegramUser.Id == context.ChatId) is not User user)
+        if (await helper.GetUserAsync(context.ChatId, true) is not User user)
             return Results.Empty;
 
         if (await context.GetState<SetTimezoneState.Setting>() is null)
@@ -234,19 +247,61 @@ internal class SettingsCommand : IBotCommand
         if (context.Update.CallbackQuery?.Data is not string data || DateTimeZoneProviders.Tzdb.GetZoneOrNull(data) is not DateTimeZone timezone)
             return Results.Empty;
 
+        string timezoneString = GetTimeZoneString(timezone);
+        
+        DateTimeZone oldTimezone = user.Settings.TimeZone;
+
+        if (oldTimezone == timezone)
+            return user.Settings.Language.GetLocalized(
+                en => $"Timezone is already set to {timezoneString.Bold()}.",
+                de => $"Zeitzone ist bereits auf {timezoneString.Bold()} gesetzt."
+            ).AsMarkup().Delete();
+
         user.Settings.TimeZone = timezone;
         db.Update(user);
         await db.SaveChangesAsync();
+        
+        // update all tickerq jobs
+        
+        List<TimeTickerEntity> hwJobs = await db.Set<TimeTickerEntity>()
+            .Where(x => x.Description.Contains($"User={user.Id};"))
+            .ToListAsync();
+        
+        TimeZoneInfo tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone.Id);
 
-        string timezoneString = GetTimeZoneString(timezone);
+        foreach (TimeTickerEntity job in hwJobs)
+        {
+            Homework homework = TickerHelper.ReadTickerRequest<Homework>(job.Request);
+            job.ExecutionTime = tzInfo.ToMiddayUtc(homework.Due);
+        }
+        
+        await ticker.UpdateBatchAsync(hwJobs);
 
-        string text = user.Settings.Language.GetLocalized(
-            en => $"✔ Timezon was set to {timezoneString.Bold()}.",
+        TimeSpan eventOffset = TimeSpan.FromMinutes(options.Value.CalendarEventOffsetMinutes);
+        
+        if (Calendar.Load(user.Settings.Calender.Data) is Calendar ical)
+        {
+            List<TimeTickerEntity> calJobs = await db.Set<TimeTickerEntity>()
+                .Where(x => x.Description.Contains($"Calender={user.Settings.Calender.Id};"))
+                .ToListAsync();
+
+            foreach (TimeTickerEntity job in calJobs)
+            {
+                StoredEvent stored = TickerHelper.ReadTickerRequest<StoredEvent>(job.Request);
+                
+                if (ical.Events.FirstOrDefault(e => e.Uid == stored.EventId) is not CalendarEvent ev)
+                    continue;
+
+                job.ExecutionTime = ev.Start!.AsUtc + tzInfo.BaseUtcOffset - eventOffset;
+            }
+            
+            await ticker.UpdateBatchAsync(calJobs);
+        }
+
+        return user.Settings.Language.GetLocalized(
+            en => $"✔ Timezone was set to {timezoneString.Bold()}.",
             de => $"✔ Zeitzone wurde auf {timezoneString.Bold()} gesetzt."
-        );
-
-        return text.AsMarkup().Delete();
+        ).AsMarkup().Delete();
     }
     #endregion
 }
-

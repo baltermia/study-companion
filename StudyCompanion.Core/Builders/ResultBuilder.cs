@@ -24,60 +24,57 @@ public class ResultBuilder : MinimalTelegramBot.Results.IResult
         Text = text,
     };
 
-    public async Task ExecuteAsync(BotRequestContext context)
+    public async Task<TType.Message> ExecuteAsync(long chatId, ITelegramBotClient client, IDistributedCache cache)
     {
-        TType.Message? msg;
+        TType.Message msg;
 
         if (PhotoId != null)
-             msg = await context.Client.SendPhoto(context.ChatId, PhotoId, caption: Text, parseMode: ParseMode, replyMarkup: ReplyMarkup);
+            msg = await client.SendPhoto(chatId, PhotoId, caption: Text, parseMode: ParseMode, replyMarkup: ReplyMarkup);
         else if (Text != null)
-             msg = await context.Client.SendMessage(context.ChatId, Text, parseMode: ParseMode, replyMarkup: ReplyMarkup);
+            msg = await client.SendMessage(chatId, Text, parseMode: ParseMode, replyMarkup: ReplyMarkup);
         else
             throw new ArgumentException("At least Text or Photo must be set");
-
-        if (msg == null)
-            return;
 
         // first check if we already have a state?
         // otherwise add new one
         
-        // TODO change to using distributed cache
-
         if (USE_DELETE && Delete)
-            await context.Services
-                .GetRequiredService<IDistributedCache>()
-                .AddMessageIdAsync(context.ChatId.GetRedisKey(), msg.Id);
+            await cache.AddMessageIdAsync(chatId.GetRedisKey(), msg.Id);
+
+        return msg;
     }
+
+    public Task ExecuteAsync(BotRequestContext context) => 
+        ExecuteAsync(context.ChatId, context.Client, context.Services.GetRequiredService<IDistributedCache>());
 }
 
 public static class ResultBuilderExtensions
 {
     public static ResultBuilder Delete(this string text) => new ResultBuilder() { Text = text }.Delete();
-	public static ResultBuilder Delete(this ResultBuilder builder)
-	{
-		builder.Delete = true;
-		return builder;
-	}
+    public static ResultBuilder Delete(this ResultBuilder builder)
+    {
+        builder.Delete = true;
+        return builder;
+    }
 
     public static ResultBuilder AsMarkup(this string text, TParseMode? mode = null) => new ResultBuilder() { Text = text }.AsMarkup(mode);
-	public static ResultBuilder AsMarkup(this ResultBuilder builder, TParseMode? mode = null)
-	{
-		builder.ParseMode = mode ?? ResultBuilder.DEFAULT_MODE;
+    public static ResultBuilder AsMarkup(this ResultBuilder builder, TParseMode? mode = null)
+    {
+        builder.ParseMode = mode ?? ResultBuilder.DEFAULT_MODE;
         return builder;
-	}
+    }
 
     public static ResultBuilder WithButtons(this string text, IReplyMarkup? buttons) => new ResultBuilder() { Text = text }.WithButtons(buttons);
-	public static ResultBuilder WithButtons(this ResultBuilder builder, IReplyMarkup? buttons)
-	{
-		builder.ReplyMarkup = buttons;
+    public static ResultBuilder WithButtons(this ResultBuilder builder, IReplyMarkup? buttons)
+    {
+        builder.ReplyMarkup = buttons;
         return builder;
-	}
+    }
 
     public static ResultBuilder WithPhoto(this string text, string? photoId) => new ResultBuilder() { Text = text }.WithPhoto(photoId);
-	public static ResultBuilder WithPhoto(this ResultBuilder builder, string? photoId)
-	{
+    public static ResultBuilder WithPhoto(this ResultBuilder builder, string? photoId)
+    {
         builder.PhotoId = photoId;
         return builder;
-	}
+    }
 }
-

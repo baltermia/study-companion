@@ -14,12 +14,16 @@ public enum CommandChat
 
 public record CommandDescription(string Command, string Description, CommandChat Chat);
 
-public interface IBotCommand
+public interface IBotCallback
+{
+    public static virtual void ConfigureCallbacks(BotApplication bot) { }
+}
+
+public interface IBotCommand : IBotCallback
 {
     public static abstract string GetTitle(Language lang);
     
     public static abstract List<CommandDescription> Commands { get; }
 
     public static abstract void ConfigureCommands(BotApplication bot);
-    public static virtual void ConfigureCallbacks(BotApplication bot) { }
 }

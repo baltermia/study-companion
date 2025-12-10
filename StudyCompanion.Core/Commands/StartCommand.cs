@@ -116,6 +116,13 @@ internal class StartCommand : IBotCommand
                       """
             );
         }
+        else
+        {
+            text = text.Newline() + lang.GetLocalized(
+                en => "Use the buttons below to navigate through the bot features.",
+                de => "Benutze die Knöpfe unten, um durch die Bot-Funktionen zu navigieren."
+            );
+        }
         
         return 
             text.AsMarkup()

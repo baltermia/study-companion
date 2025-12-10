@@ -6,4 +6,5 @@ public class UserOptions
     public int CalendarCheckMinutes { get; set; }
     public int CalendarRefreshHours { get; set; }
     public int CalendarFutureDays { get; set; }
+    public int CalendarEventOffsetMinutes { get; set; }
 }

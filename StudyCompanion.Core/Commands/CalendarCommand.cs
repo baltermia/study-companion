@@ -167,7 +167,7 @@ public class CalendarCommand : IBotCommand
             {
                 TimeSpan? duration = ev.End?.SubtractExact(ev.Start ?? ev.End);
                     
-                text += $"{ev.Start?.ToTimeZone(tz.Id).Time?.ToString(culture)}: {ev.Summary} ({duration?.ToCompactString()}) {ev.Description?.Trim()}".Newline();
+                text += $"{ev.Start?.ToTimeZone(tz.Id).Time?.ToString(culture)}: {ev.Summary} ({duration?.ToCompactString()}) {ev.Description?.Trim()} - {ev.Location}".Newline();
             }
         }
 

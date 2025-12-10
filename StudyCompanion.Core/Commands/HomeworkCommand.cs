@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.Handling;
@@ -9,6 +10,7 @@ using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Data;
 using StudyCompanion.Core.Extensions;
 using StudyCompanion.Core.Helpers;
+using StudyCompanion.Core.Jobs;
 using StudyCompanion.Core.Shared;
 using StudyCompanion.Core.Shared.Filters;
 using StudyCompanion.Shared.Contracts;
@@ -16,6 +18,9 @@ using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Shared.Models;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TickerQ.Utilities;
+using TickerQ.Utilities.Entities;
+using TickerQ.Utilities.Interfaces.Managers;
 using IResult = MinimalTelegramBot.Results.IResult;
 using Results = MinimalTelegramBot.Results.Results;
 
@@ -227,7 +232,7 @@ public class HomeworkCommand : IBotCommand
         ).Delete().AsMarkup().WithButtons(Buttons.YesNoKeyboard(_addPrefix, lang));
     }
 
-    private static async Task<IResult> OnConfirmAdd(BotRequestContext context, IHelper helper, PostgresDbContext db)
+    private static async Task<IResult> OnConfirmAdd(BotRequestContext context, IHelper helper, PostgresDbContext db, ITimeTickerManager<TimeTickerEntity> ticker)
     {
         bool? confirm = Buttons.ParseYesNoCallback(context.CallbackData, _addPrefix);
 
@@ -247,16 +252,30 @@ public class HomeworkCommand : IBotCommand
                 en => "Homework not added.",
                 de => "Hausaufgabe nicht hinzugefügt."
             ).Delete();
+        
+        DateOnly due = DateOnly.FromDateTime(confirmation.Due);
 
-        user.Homework.Add(new()
+        Homework homework = new()
         {
-            Due = DateOnly.FromDateTime(confirmation.Due),
+            Due = due,
             Note = confirmation.Note,
-        });
+        };
+        
+        user.Homework.Add(homework);
 
         db.Update(user);
 
         await db.SaveChangesAsync();
+        
+        DateTime utcAtMidday = TimeZoneInfo.FindSystemTimeZoneById(user.Settings.TimeZone.Id).ToMiddayUtc(due);
+
+        await ticker.AddAsync(new TimeTickerEntity()
+        {
+            Function = nameof(HomeworkJob.RemindHomework),
+            ExecutionTime = utcAtMidday,
+            Description = $"User={user.Id};Homework={homework.Id};",
+            Request = TickerHelper.CreateTickerRequest(homework),
+        });
 
         return user.Settings.Language.GetLocalized(
             en => "✅ Homework added successfully!",
@@ -320,7 +339,7 @@ public class HomeworkCommand : IBotCommand
         ).Delete().WithButtons(Buttons.YesNoKeyboard(_deletePrefix, lang));
     }
 
-    private static async Task<IResult> OnConfirmDelete(BotRequestContext context, IHelper helper, PostgresDbContext db)
+    private static async Task<IResult> OnConfirmDelete(BotRequestContext context, IHelper helper, PostgresDbContext db, ITimeTickerManager<TimeTickerEntity> ticker)
     {
         bool? confirm = Buttons.ParseYesNoCallback(context.CallbackData, _deletePrefix);
 
@@ -346,6 +365,9 @@ public class HomeworkCommand : IBotCommand
         db.Remove(hw);
 
         await db.SaveChangesAsync();
+        
+       if (await db.Set<TimeTickerEntity>().FirstOrDefaultAsync(t => t.Description.Contains($"Homework={hw.Id};")) is TimeTickerEntity entity)
+           await ticker.DeleteAsync(entity.Id);
         
         return user.Settings.Language.GetLocalized(
             en => "✅ Homework deleted successfully!",

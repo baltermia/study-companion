@@ -17,6 +17,7 @@ using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.Customizer;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
+using TickerQ.Utilities.Entities;
 
 namespace StudyCompanion.Core;
 
@@ -71,11 +72,11 @@ public static class Program
             // options
             .ConfigureOptions<UserOptions>(builder.Configuration);
             
-            // hosted services
-            //.AddHostedService<PayoutCheckerService>();
+        // hosted services
+        //.AddHostedService<PayoutCheckerService>();
 
         builder.Logging.ConfigureLogging(builder.Configuration);
-        
+
         builder.Services.AddTickerQ(options =>
         {
             options.AddOperationalStore(efOptions =>
@@ -85,7 +86,7 @@ public static class Program
             });
         });
 
-       BotApplication bot = builder.Build();
+        BotApplication bot = builder.Build();
 
         bot.UseStateMachine();
 
@@ -99,6 +100,8 @@ public static class Program
             
         // configure commands and callbacks
         bot.ConfigureCommands();
+
+        bot.WebApplicationAccessor.UseTickerQ();
         
         // set commands
         await SetTelegramCommandsAsync(bot.Services);
@@ -120,6 +123,13 @@ public static class Program
         _configureCommands.Add(T.ConfigureCommands);
         _configureCallbacks.Add(T.ConfigureCallbacks);
         _commands.AddRange(T.Commands);
+
+        return bot;
+    }
+    
+    private static BotApplication ConfigureCallback<T>(this BotApplication bot) where T : IBotCallback
+    {
+        _configureCallbacks.Add(T.ConfigureCallbacks);
 
         return bot;
     }
