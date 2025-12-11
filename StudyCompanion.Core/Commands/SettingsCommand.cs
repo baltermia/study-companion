@@ -287,12 +287,12 @@ internal class SettingsCommand : IBotCommand
 
             foreach (TimeTickerEntity job in calJobs)
             {
-                StoredEvent stored = TickerHelper.ReadTickerRequest<StoredEvent>(job.Request);
+                EventJobData stored = TickerHelper.ReadTickerRequest<EventJobData>(job.Request);
                 
                 if (ical.Events.FirstOrDefault(e => e.Uid == stored.EventId) is not CalendarEvent ev)
                     continue;
 
-                job.ExecutionTime = ev.Start!.AsUtc + tzInfo.BaseUtcOffset - eventOffset;
+                job.ExecutionTime = ev.Start!.AsUtc - eventOffset;
             }
             
             await ticker.UpdateBatchAsync(calJobs);

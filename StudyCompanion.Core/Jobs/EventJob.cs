@@ -12,14 +12,14 @@ using Calendar = Ical.Net.Calendar;
 
 namespace StudyCompanion.Core.Jobs;
 
-public record StoredEvent(int CalendarId, string EventId);
+public record EventJobData(int CalendarId, string EventId);
 
 public class EventJob(PostgresDbContext db, ITelegramBotClient bot, IDistributedCache cache)
 {
     [TickerFunction(nameof(RemindEvent))]
-    public async Task RemindEvent(TickerFunctionContext<StoredEvent> context, CancellationToken token)
+    public async Task RemindEvent(TickerFunctionContext<EventJobData> context, CancellationToken token)
     {
-        StoredEvent stored = context.Request;
+        EventJobData stored = context.Request;
             
         User? user = await db.Set<User>()
             .Include(u => u.Settings)

@@ -16,6 +16,8 @@ using IResult = MinimalTelegramBot.Results.IResult;
 using Results = MinimalTelegramBot.Results.Results;
 
 namespace StudyCompanion.Core.Jobs;
+    
+public record HomeworkJobData(int HomeworkId, string Note);
 
 public class HomeworkCallbback : IBotCallback
 {
@@ -69,13 +71,13 @@ public class HomeworkJob(PostgresDbContext db, ITelegramBotClient bot, IDistribu
     
     [TickerFunction(nameof(RemindHomework))]
     public async Task RemindHomework(
-        TickerFunctionContext<int> context,
+        TickerFunctionContext<HomeworkJobData> context,
         CancellationToken token)
     {
-        if (await db.Set<Homework>().FirstOrDefaultAsync(x => x.Id == context.Request, token) is not Homework homework)
+        HomeworkJobData data = context.Request;
+        if (await db.Set<User>().FirstOrDefaultAsync(u => u.Homework.Any(h => h.Id == data.HomeworkId)) is not User user)
             return;
 
-        User user = homework.User;
         Language lang = user.Settings.Language;
 
         string text = lang.GetLocalized(
@@ -84,13 +86,13 @@ public class HomeworkJob(PostgresDbContext db, ITelegramBotClient bot, IDistribu
         ).Bold().Newline();
         
         text += lang.GetLocalized(
-            en => $"Due today: {homework.Note}",
-            de => $"Heute fällig: {homework.Note}"
+            en => $"Due today: {data.Note}",
+            de => $"Heute fällig: {data.Note}"
         );
 
         await text
             .AsMarkup()
-            .WithButtons(GetButtons(lang, homework.Id))
+            .WithButtons(GetButtons(lang, data.HomeworkId))
             .ExecuteAsync(user.TelegramUser.Id, bot, cache);
     }
 }

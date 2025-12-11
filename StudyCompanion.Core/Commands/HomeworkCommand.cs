@@ -274,7 +274,7 @@ public class HomeworkCommand : IBotCommand
             Function = nameof(HomeworkJob.RemindHomework),
             ExecutionTime = utcAtMidday,
             Description = $"User={user.Id};Homework={homework.Id};",
-            Request = TickerHelper.CreateTickerRequest(homework),
+            Request = TickerHelper.CreateTickerRequest(new HomeworkJobData(homework.Id, homework.Note)),
         });
 
         return user.Settings.Language.GetLocalized(
@@ -292,7 +292,7 @@ public class HomeworkCommand : IBotCommand
         [State(2)]
         public class Confirm
         {
-            public required int Index { get; init; }
+            public required int Id { get; init; }
         };
     }
 
@@ -304,8 +304,8 @@ public class HomeworkCommand : IBotCommand
         await context.SetState(new DeleteHomeworkState.GetIndex());
 
         return user.Settings.Language.GetLocalized(
-            en => "Respond with the ID you want to delete.",
-            de => "Antworte mit der ID die du löschen möchtest."
+            en => "Respond with the Index you want to delete.",
+            de => "Antworte mit dem Index den du löschen möchtest."
         ).Delete();
     }
 
@@ -325,13 +325,23 @@ public class HomeworkCommand : IBotCommand
                 en => "Parsing failed. Please try again.",
                 de => "Parsing fehlgeschlagen. Bitte versuche es erneut."
             ).Delete();
+        
+        if (index < 1 || index > user.Homework.Count)
+            return lang.GetLocalized(
+                en => "The provided index is out of range. Please try again.",
+                de => "Der angegebene Index ist außerhalb des gültigen Bereichs. Bitte versuche es erneut."
+            ).Delete();
 
+        if (user.Homework.OrderBy(h => h.Due).ElementAtOrDefault(index - 1) is not Homework homework)
+            return user.Settings.Language.GetLocalized(
+                en => "Homework Index not found.",
+                de => "Hausaufgabe nicht gefunden."
+            ).Delete();
+        
         await context.SetState(new DeleteHomeworkState.Confirm()
         {
-            Index = index
+            Id = homework.Id,
         });
-        
-        Homework homework = user.Homework[index];
 
         return lang.GetLocalized(
             en => $"Please confirm you want to delete '{homework.Note}' (due on {homework.Due.ToString("d", culture)}).",
@@ -359,14 +369,17 @@ public class HomeworkCommand : IBotCommand
                 en => "Homework not deleted.",
                 de => "Hausaufgabe nicht gelöscht."
             ).Delete();
+
+        if (await db.Set<Homework>().FirstOrDefaultAsync(x => x.Id == confirmation.Id) is not Homework homework)
+            return user.Settings.Language.GetLocalized(
+                en => "Homework Index not found.",
+                de => "Hausaufgabe nicht gefunden."
+            ).Delete();
         
-        Homework hw = user.Homework[confirmation.Index];
-
-        db.Remove(hw);
-
+        db.Remove(homework);
         await db.SaveChangesAsync();
         
-       if (await db.Set<TimeTickerEntity>().FirstOrDefaultAsync(t => t.Description.Contains($"Homework={hw.Id};")) is TimeTickerEntity entity)
+       if (await db.Set<TimeTickerEntity>().FirstOrDefaultAsync(t => t.Description.Contains($"Homework={confirmation.Id};")) is TimeTickerEntity entity)
            await ticker.DeleteAsync(entity.Id);
         
         return user.Settings.Language.GetLocalized(

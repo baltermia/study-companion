@@ -67,28 +67,23 @@ public class CalendarRefreshService(
                             .Where(t => t.Description.Contains($"Calender={calender.Id};"))
                             .ToListAsync(token);
                         
-                        Settings settings = await db.Set<Settings>().FirstAsync(s => s.CalenderId == calender.Id); 
-                        TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(settings.TimeZone.Id);
-
                         foreach (CalendarEvent calEvent in events)
                         {
                             TimeTickerEntity? entity = tickers.FirstOrDefault(t => t.Description.Contains($"Event={calEvent.Uid};"));
 
                             if (entity == null)
                             {
-                                DateTime execution = calEvent.Start!.AsUtc + tz.BaseUtcOffset - eventOffset;
-                                
                                 await ticker.AddAsync(new TimeTickerEntity()
                                 {
                                     Function = nameof(EventJob.RemindEvent),
                                     Description = $"Calender={calender.Id};Event={calEvent.Uid};",
-                                    ExecutionTime = execution,
-                                    Request = TickerHelper.CreateTickerRequest(new StoredEvent(calender.Id, calEvent.Uid)),
+                                    ExecutionTime = calEvent.Start!.AsUtc - eventOffset,
+                                    Request = TickerHelper.CreateTickerRequest(new EventJobData(calender.Id, calEvent.Uid)),
                                 }, token);
                             }
                             else
                             {
-                                entity.ExecutionTime =  calEvent.Start!.AsUtc + tz.BaseUtcOffset - eventOffset;
+                                entity.ExecutionTime =  calEvent.Start!.AsUtc - eventOffset;
                             
                                 await ticker.UpdateAsync(entity, token);
                             }
