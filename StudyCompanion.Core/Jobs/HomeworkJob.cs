@@ -3,7 +3,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.Handling;
-using MinimalTelegramBot.Handling.Filters;
 using StudyCompanion.Core.Builders;
 using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Data;
@@ -18,7 +17,7 @@ using Results = MinimalTelegramBot.Results.Results;
 
 namespace StudyCompanion.Core.Jobs;
     
-public record HomeworkJobData(int HomeworkId, string Note);
+public record HomeworkJobData(int HomeworkId, string Note, DateOnly Due);
 
 public class HomeworkCallback : IBotCallback
 {

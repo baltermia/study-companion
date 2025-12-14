@@ -7,4 +7,5 @@ public class UserOptions
     public int CalendarRefreshHours { get; set; }
     public int CalendarFutureDays { get; set; }
     public int CalendarEventOffsetMinutes { get; set; }
+    public TimeSpan MorningReminderTime { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.StateMachine.Extensions;
 using MinimalTelegramBot.StateMachine.Persistence.EntityFrameworkCore;
@@ -17,8 +18,9 @@ using StudyCompanion.Core.Jobs;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.Customizer;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
-using TickerQ.EntityFrameworkCore.DbContextFactory;
+using TickerQ.Utilities;
 using TickerQ.Utilities.Entities;
+using TickerQ.Utilities.Interfaces.Managers;
 
 namespace StudyCompanion.Core;
 
@@ -116,6 +118,26 @@ public static class Program
             if ((await db.Database.GetPendingMigrationsAsync()).Any())
                 await db.Database.MigrateAsync();
         }
+        
+        HelperService<PostgresDbContext>.NewUser += async (s, e) =>
+        {
+            IOptions<UserOptions> options = e.Services.GetRequiredService<IOptions<UserOptions>>();
+            ICronTickerManager<CronTickerEntity> cronTicker = e.Services.GetRequiredService<ICronTickerManager<CronTickerEntity>>();
+            
+            TimeSpan time = options.Value.MorningReminderTime;
+            TimeSpan offset = TimeZoneInfo.FindSystemTimeZoneById(e.User.Settings.TimeZone.Id).BaseUtcOffset;
+
+            TimeSpan execution = time - offset;
+            string expression = $"{execution.Seconds} {execution.Minutes} {execution.Hours} * * *";
+            
+            await cronTicker.AddAsync(new CronTickerEntity
+            {
+                Function = nameof(MorningJob.RemindMorning),
+                Description = $"User={e.User.Id};",
+                Request = TickerHelper.CreateTickerRequest(new MorningJobData(e.User.Id)),
+                Expression = expression,
+            });
+        };
 
         await bot.RunAsync();
     }

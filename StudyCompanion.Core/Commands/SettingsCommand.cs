@@ -22,6 +22,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TickerQ.Utilities;
 using TickerQ.Utilities.Entities;
+using TickerQ.Utilities.Enums;
 using TickerQ.Utilities.Interfaces.Managers;
 using IResult = MinimalTelegramBot.Results.IResult;
 using Results = MinimalTelegramBot.Results.Results;
@@ -233,7 +234,8 @@ internal class SettingsCommand : IBotCommand
         BotRequestContext context, 
         IHelper helper, 
         PostgresDbContext db, 
-        ITimeTickerManager<TimeTickerEntity> ticker, 
+        ITimeTickerManager<TimeTickerEntity> timeTicker, 
+        ICronTickerManager<CronTickerEntity> cronTicker, 
         IOptions<UserOptions> options)
     {
         if (await helper.GetUserAsync(context.ChatId, true) is not User user)
@@ -264,25 +266,28 @@ internal class SettingsCommand : IBotCommand
         // update all tickerq jobs
         
         List<TimeTickerEntity> hwJobs = await db.Set<TimeTickerEntity>()
-            .Where(x => x.Description.Contains($"User={user.Id};"))
+            .Where(x => 
+                x.Status == TickerStatus.Idle &&
+                x.Function == nameof(HomeworkJob.RemindHomework) && 
+                x.Description.Contains($"User={user.Id};"))
             .ToListAsync();
         
         TimeZoneInfo tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone.Id);
 
         foreach (TimeTickerEntity job in hwJobs)
         {
-            Homework homework = TickerHelper.ReadTickerRequest<Homework>(job.Request);
+            HomeworkJobData homework = TickerHelper.ReadTickerRequest<HomeworkJobData>(job.Request);
             job.ExecutionTime = tzInfo.ToMiddayUtc(homework.Due.AddDays(-1));
         }
         
-        await ticker.UpdateBatchAsync(hwJobs);
+        await timeTicker.UpdateBatchAsync(hwJobs);
 
         TimeSpan eventOffset = TimeSpan.FromMinutes(options.Value.CalendarEventOffsetMinutes);
         
         if (Calendar.Load(user.Settings.Calender.Data) is Calendar ical)
         {
             List<TimeTickerEntity> calJobs = await db.Set<TimeTickerEntity>()
-                .Where(x => x.Description.Contains($"Calender={user.Settings.Calender.Id};"))
+                .Where(x => x.Status == TickerStatus.Idle && x.Description.Contains($"Calender={user.Settings.Calender.Id};"))
                 .ToListAsync();
 
             foreach (TimeTickerEntity job in calJobs)
@@ -295,7 +300,34 @@ internal class SettingsCommand : IBotCommand
                 job.ExecutionTime = ev.Start!.AsUtc - eventOffset;
             }
             
-            await ticker.UpdateBatchAsync(calJobs);
+            await timeTicker.UpdateBatchAsync(calJobs);
+        }
+
+        CronTickerEntity? morning = await db.Set<CronTickerEntity>()
+            .FirstOrDefaultAsync(x => 
+                x.Function == nameof(MorningJob.RemindMorning) && 
+                x.Description.Contains($"User={user.Id};"));
+
+        TimeSpan time = options.Value.MorningReminderTime;
+        TimeSpan offset = tzInfo.BaseUtcOffset;
+
+        TimeSpan execution = time - offset;
+        string expression = $"{execution.Seconds} {execution.Minutes} {execution.Hours} * * *";
+            
+        if (morning != null)
+        {
+            morning.Expression = expression;
+            await cronTicker.UpdateAsync(morning);
+        }
+        else
+        {
+            await cronTicker.AddAsync(new CronTickerEntity()
+            {
+                Function = nameof(MorningJob.RemindMorning),
+                Description = $"User={user.Id};",
+                Request = TickerHelper.CreateTickerRequest(new MorningJobData(user.Id)),
+                Expression = expression,
+            });
         }
 
         return user.Settings.Language.GetLocalized(

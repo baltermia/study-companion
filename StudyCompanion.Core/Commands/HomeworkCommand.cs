@@ -310,7 +310,7 @@ public class HomeworkCommand : IBotCommand
             Function = nameof(HomeworkJob.RemindHomework),
             ExecutionTime = utcAtMidday,
             Description = $"User={user.Id};Homework={homework.Id};",
-            Request = TickerHelper.CreateTickerRequest(new HomeworkJobData(homework.Id, homework.Note)),
+            Request = TickerHelper.CreateTickerRequest(new HomeworkJobData(homework.Id, homework.Note, homework.Due)),
         });
 
         return user.Settings.Language.GetLocalized(
