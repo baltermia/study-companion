@@ -104,11 +104,6 @@ public static class Program
             
         // configure commands and callbacks
         bot.ConfigureCommands();
-
-        bot.WebApplicationAccessor.UseTickerQ();
-        
-        // set commands
-        await SetTelegramCommandsAsync(bot.Services);
         
         await using (AsyncServiceScope scope = bot.Services.CreateAsyncScope())
         {
@@ -138,6 +133,11 @@ public static class Program
                 Expression = expression,
             });
         };
+
+        bot.WebApplicationAccessor.UseTickerQ();
+        
+        // set commands
+        await SetTelegramCommandsAsync(bot.Services);
 
         await bot.RunAsync();
     }
