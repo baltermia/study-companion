@@ -1,4 +1,26 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: StudyCompanion.Core/Dockerfile
+    container_name: studycompanion_app
+    restart: unless-stopped
+    environment:
+      BotToken: ${BOT_TOKEN}
+      OpenAI__KEY: ${OPENAI_KEY}
+      AppOptions__DefaultTimezone: "Europe/Berlin"
+      AppOptions__CalendarCheckMinutes: 10
+      AppOptions__CalendarRefreshHours: 12
+      AppOptions__CalendarEventOffsetMinutes: 60
+      AppOptions__MorningReminderTime: "08:00"
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-studydb};Username=${POSTGRES_USER:-study};Password=${POSTGRES_PASSWORD:-study}
+      ConnectionStrings__RedisConnection: redis:6379
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8080:8080"
+
   db:
     image: postgres:latest
     container_name: studycompanion_db

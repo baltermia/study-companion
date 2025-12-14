@@ -236,7 +236,7 @@ internal class SettingsCommand : IBotCommand
         PostgresDbContext db, 
         ITimeTickerManager<TimeTickerEntity> timeTicker, 
         ICronTickerManager<CronTickerEntity> cronTicker, 
-        IOptions<UserOptions> options)
+        IOptions<AppOptions> options)
     {
         if (await helper.GetUserAsync(context.ChatId, true) is not User user)
             return Results.Empty;

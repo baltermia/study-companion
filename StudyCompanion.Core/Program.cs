@@ -73,7 +73,7 @@ public static class Program
             //.ConfigureDataServices(builder.Configuration)
 
             // options
-            .ConfigureOptions<UserOptions>(builder.Configuration);
+            .ConfigureOptions<AppOptions>(builder.Configuration);
             
         // hosted services
         //.AddHostedService<PayoutCheckerService>();
@@ -121,7 +121,7 @@ public static class Program
         
         HelperService<PostgresDbContext>.NewUser += async (s, e) =>
         {
-            IOptions<UserOptions> options = e.Services.GetRequiredService<IOptions<UserOptions>>();
+            IOptions<AppOptions> options = e.Services.GetRequiredService<IOptions<AppOptions>>();
             ICronTickerManager<CronTickerEntity> cronTicker = e.Services.GetRequiredService<ICronTickerManager<CronTickerEntity>>();
             
             TimeSpan time = options.Value.MorningReminderTime;

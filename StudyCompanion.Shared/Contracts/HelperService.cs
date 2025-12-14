@@ -22,7 +22,7 @@ public interface IHelper
     public Task<User> GetUserAsync(TelegramUser telegramUser, bool withCalendar = false);
 }
 
-public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<UserOptions> options, IServiceScopeFactory factory) : IHelper
+public class HelperService<T>(IDbContextFactory<T> contextFactory, IOptions<AppOptions> options, IServiceScopeFactory factory) : IHelper
     where T : DbContext
 {
     public static event AsyncEventHandler<NewUserEventArgs>? NewUser;

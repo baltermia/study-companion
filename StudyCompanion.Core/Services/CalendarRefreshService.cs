@@ -15,14 +15,17 @@ namespace StudyCompanion.Core.Services;
 
 public class CalendarRefreshService(
     IDbContextFactory<PostgresDbContext> dbFactory, 
-    IOptions<UserOptions> options,
+    IOptions<AppOptions> options,
     ILogger<CalendarRefreshService> logger,
     ITimeTickerManager<TimeTickerEntity> ticker
 ) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken token)
     {
-        using PeriodicTimer timer = new(TimeSpan.FromMinutes(options.Value.CalendarCheckMinutes));
+        int mins = options.Value.CalendarCheckMinutes;
+        logger.LogInformation($"Configured to check calendars every {mins} minutes.");
+        
+        using PeriodicTimer timer = new(TimeSpan.FromMinutes(mins));
         
         TimeSpan eventOffset = TimeSpan.FromMinutes(options.Value.CalendarEventOffsetMinutes);
 

@@ -80,7 +80,7 @@ internal class StartCommand : IBotCommand
         public class Setting;
     }
 
-    private static async Task<IResult> OnStart(BotRequestContext context, IHelper helper, IOptions<UserOptions> options)
+    private static async Task<IResult> OnStart(BotRequestContext context, IHelper helper, IOptions<AppOptions> options)
     {
         await context.DropPrevious();
 

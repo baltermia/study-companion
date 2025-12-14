@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: studycompanion_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-study}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-study}
+      POSTGRES_DB: ${POSTGRES_DB:-studydb}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:latest
+    container_name: studycompanion_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+
