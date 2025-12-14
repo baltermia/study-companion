@@ -12,8 +12,8 @@ using StudyCompanion.Core.Data;
 namespace StudyCompanion.Core.Migrations
 {
     [DbContext(typeof(PostgresDbContext))]
-    [Migration("20251211133037_AddHomeworkCompletion")]
-    partial class AddHomeworkCompletion
+    [Migration("20251214191954_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
