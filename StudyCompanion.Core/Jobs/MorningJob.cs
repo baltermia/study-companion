@@ -28,12 +28,12 @@ public class MorningJob(PostgresDbContext db, ITelegramBotClient bot, IDistribut
 
         Language lang = user.Settings.Language;
 
+        string summary = await ai.GetUserSummary(user);
+
         string text = lang.GetLocalized(
             en => "🌅 Good morning!",
             de => "🌅 Guten morgen!"
-        ).Bold().Newline();
-
-        string summary = await ai.GetUserSummary(user);
+        ).Bold().Newline().Newline() + summary;
         
         await text
             .AsMarkup()
