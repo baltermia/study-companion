@@ -110,22 +110,8 @@ public static class Program
             try
             {
                 await using PostgresDbContext db = scope.ServiceProvider.GetRequiredService<PostgresDbContext>();
-                
-                await db.Database.EnsureCreatedAsync();
 
-                IEnumerable<string> pendingMigrations = await db.Database.GetPendingMigrationsAsync();
-                
-                if (pendingMigrations.Any())
-                {
-                    Console.WriteLine("Applying pending migrations...");
-                    await db.Database.MigrateAsync();
-                    Console.WriteLine("Migrations applied successfully.");
-                }
-                else
-                {
-                    Console.WriteLine("No pending migrations found.");
-                }
-                
+                await db.Database.MigrateAsync();
             }
             catch (Exception ex)
             {
