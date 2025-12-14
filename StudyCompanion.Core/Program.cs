@@ -107,11 +107,31 @@ public static class Program
         
         await using (AsyncServiceScope scope = bot.Services.CreateAsyncScope())
         {
-            PostgresDbContext db = scope.ServiceProvider.GetRequiredService<PostgresDbContext>();
-            await db.Database.EnsureCreatedAsync();
-            
-            if ((await db.Database.GetPendingMigrationsAsync()).Any())
-                await db.Database.MigrateAsync();
+            try
+            {
+                await using PostgresDbContext db = scope.ServiceProvider.GetRequiredService<PostgresDbContext>();
+                
+                await db.Database.EnsureCreatedAsync();
+
+                IEnumerable<string> pendingMigrations = await db.Database.GetPendingMigrationsAsync();
+                
+                if (pendingMigrations.Any())
+                {
+                    Console.WriteLine("Applying pending migrations...");
+                    await db.Database.MigrateAsync();
+                    Console.WriteLine("Migrations applied successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("No pending migrations found.");
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                ILogger<StartCommand> logger = scope.ServiceProvider.GetRequiredService<ILogger<StartCommand>>();
+                logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+            }
         }
         
         HelperService<PostgresDbContext>.NewUser += async (s, e) =>
