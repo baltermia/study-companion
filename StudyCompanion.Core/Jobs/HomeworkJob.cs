@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using MinimalTelegramBot;
 using MinimalTelegramBot.Builder;
 using MinimalTelegramBot.Handling;
+using MinimalTelegramBot.Handling.Filters;
 using StudyCompanion.Core.Builders;
 using StudyCompanion.Core.Contracts;
 using StudyCompanion.Core.Data;
@@ -19,20 +20,21 @@ namespace StudyCompanion.Core.Jobs;
     
 public record HomeworkJobData(int HomeworkId, string Note);
 
-public class HomeworkCallbback : IBotCallback
+public class HomeworkCallback : IBotCallback
 {
     public static readonly string CALLBACK_PREFIX = "homework_remind_";
     
     public static void ConfigureCallbacks(BotApplication bot)
     {
         bot.HandleCallbackDataPrefix(CALLBACK_PREFIX, OnDone);
+        //bot.Handle(OnDone);
     }
 
     private static async Task<IResult> OnDone(BotRequestContext context, IHelper helper, PostgresDbContext db)
     {
         if (string.IsNullOrWhiteSpace(context.CallbackData))
             return Results.Empty;
-
+        
         if (await helper.GetUserAsync(context.ChatId) is not User user)
             return Results.Empty;
         
@@ -44,7 +46,9 @@ public class HomeworkCallbback : IBotCallback
         if (await db.Set<Homework>().FirstOrDefaultAsync(x => x.Id == homeworkId) is not Homework homework)
             return Results.Empty;
 
-        db.Remove(homework);
+        homework.CompletedAt = DateTime.UtcNow;
+
+        db.Update(homework);
         
         await db.SaveChangesAsync();
         
@@ -65,7 +69,7 @@ public class HomeworkJob(PostgresDbContext db, ITelegramBotClient bot, IDistribu
         InlineKeyboard = [[
             InlineKeyboardButton.WithCallbackData(
                 lang.GetLocalized(en => "✅ Done", de => "✅ Fertig"), 
-                HomeworkCallbback.CALLBACK_PREFIX + homeworkId)
+                HomeworkCallback.CALLBACK_PREFIX + homeworkId)
         ]]
     };
     
@@ -75,7 +79,12 @@ public class HomeworkJob(PostgresDbContext db, ITelegramBotClient bot, IDistribu
         CancellationToken token)
     {
         HomeworkJobData data = context.Request;
-        if (await db.Set<User>().FirstOrDefaultAsync(u => u.Homework.Any(h => h.Id == data.HomeworkId)) is not User user)
+        
+        User? user = await db.Set<User>()
+            .Include(u => u.Settings)
+            .FirstOrDefaultAsync(u => u.Homework.Any(h => h.Id == data.HomeworkId), token);
+        
+        if (user == null)
             return;
 
         Language lang = user.Settings.Language;
@@ -86,8 +95,8 @@ public class HomeworkJob(PostgresDbContext db, ITelegramBotClient bot, IDistribu
         ).Bold().Newline();
         
         text += lang.GetLocalized(
-            en => $"Due today: {data.Note}",
-            de => $"Heute fällig: {data.Note}"
+            en => $"Due for tomorrow: {data.Note}",
+            de => $"Fällig für morgen: {data.Note}"
         );
 
         await text

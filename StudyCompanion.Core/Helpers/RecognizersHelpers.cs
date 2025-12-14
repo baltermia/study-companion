@@ -25,7 +25,7 @@ public static class RecognizerDateTimeHelper
             return null;
         }
 
-        var refDate = referenceDate ?? DateTime.Now;
+        var refDate = referenceDate ?? DateTime.UtcNow;
 
         // RecognizeDateTime returns a list of ModelResult objects.
         var results = DateTimeRecognizer.RecognizeDateTime(text, culture, refTime: refDate);

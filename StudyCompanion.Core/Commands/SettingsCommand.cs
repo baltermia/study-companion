@@ -272,7 +272,7 @@ internal class SettingsCommand : IBotCommand
         foreach (TimeTickerEntity job in hwJobs)
         {
             Homework homework = TickerHelper.ReadTickerRequest<Homework>(job.Request);
-            job.ExecutionTime = tzInfo.ToMiddayUtc(homework.Due);
+            job.ExecutionTime = tzInfo.ToMiddayUtc(homework.Due.AddDays(-1));
         }
         
         await ticker.UpdateBatchAsync(hwJobs);

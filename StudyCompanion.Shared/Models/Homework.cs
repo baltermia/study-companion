@@ -7,9 +7,8 @@ public class Homework
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    
-    public User User { get; set; }
 
+    public DateTime? CompletedAt { get; set; }
     public required string Note { get; set; }
     public required DateOnly Due { get; set; }
 }

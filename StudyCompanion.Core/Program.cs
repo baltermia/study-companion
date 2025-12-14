@@ -13,6 +13,7 @@ using StudyCompanion.Shared.Options;
 using StudyCompanion.Shared.Extensions;
 using StudyCompanion.Core.Commands;
 using OpenAI.Chat;
+using StudyCompanion.Core.Jobs;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.Customizer;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
@@ -96,7 +97,8 @@ public static class Program
             .ConfigureCommand<SettingsCommand>()
             .ConfigureCommand<CalendarCommand>()
             .ConfigureCommand<HomeworkCommand>()
-            .ConfigureCommand<StartCommand>();
+            .ConfigureCommand<StartCommand>()
+            .ConfigureCallback<HomeworkCallback>();
             
         // configure commands and callbacks
         bot.ConfigureCommands();

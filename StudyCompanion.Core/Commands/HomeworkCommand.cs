@@ -76,10 +76,10 @@ public class HomeworkCommand : IBotCommand
 
         bot.HandleUpdateType(UpdateType.Message, OnDue)
             .FilterState<NewHomeworkState.GetDue>();
-
+        
         bot.Handle(OnConfirmAdd)
             .FilterState<NewHomeworkState.Confirm>();
-
+        
         bot.HandleUpdateType(UpdateType.Message, OnId)
             .FilterState<DeleteHomeworkState.GetIndex>();
 
@@ -102,7 +102,9 @@ public class HomeworkCommand : IBotCommand
             de => "📌 Deine Hausaufgaben"
         ).Bold().Newline().Newline();
 
-        bool noHomework = user.Homework.Count == 0;
+        List<Homework> open = user.Homework.Where(h => !h.CompletedAt.HasValue).ToList();
+
+        bool noHomework = open.Count == 0;
 
         if (noHomework)
         {
@@ -116,7 +118,7 @@ public class HomeworkCommand : IBotCommand
             DateOnly now = DateOnly.FromDateTime(DateTime.Now);
             DateOnly week = now.AddDays(7);
 
-            foreach ((Homework hw, int index) in user.Homework.OrderBy(h => h.Due).Select((h, i) => (h, i)))
+            foreach ((Homework hw, int index) in open.OrderBy(h => h.Due).Select((h, i) => (h, i)))
             {
                 if (hw.Due < now)
                     text += $"{index + 1}: ⚠️ [{hw.Due.ToString("d", culture)}] {hw.Note}".Newline();
@@ -125,6 +127,19 @@ public class HomeworkCommand : IBotCommand
                 else
                     text += $"{index + 1}: ⏩ [{hw.Due.ToString("d", culture)}] {hw.Note}".Newline();
             }
+        }
+        
+        List<Homework> today = user.Homework.Where(h => h.CompletedAt.HasValue && h.CompletedAt.Value.Date == DateTime.UtcNow.Date).ToList();
+        
+        if (today.Count > 0)
+        {
+            text = text.Newline().Newline() + lang.GetLocalized(
+                en => "✅ Completed Today:".Newline(),
+                de => "✅ Heute erledigt:".Newline()
+            ).Bold();
+
+            foreach (Homework hw in today.OrderBy(h => h.Due))
+                text += $"- {hw.Note}".Newline();
         }
 
         return text
@@ -192,6 +207,17 @@ public class HomeworkCommand : IBotCommand
     private static readonly string _addPrefix = "homework_add_";
     private static readonly string _deletePrefix = "homework_delete_";
 
+    private static async Task<IResult> OnDueRe(BotRequestContext context, IHelper helper)
+    {
+        if (string.IsNullOrWhiteSpace(context.MessageText))
+            return Results.Empty;
+
+        if (await context.GetState<NewHomeworkState.Confirm>() is not NewHomeworkState.Confirm confirm)
+            return Results.Empty;
+
+        return await HandleDue(context, helper, confirm.Note);
+    }
+
     private static async Task<IResult> OnDue(BotRequestContext context, IHelper helper)
     {
         if (string.IsNullOrWhiteSpace(context.MessageText))
@@ -199,7 +225,12 @@ public class HomeworkCommand : IBotCommand
 
         if (await context.GetState<NewHomeworkState.GetDue>() is not NewHomeworkState.GetDue dueState)
             return Results.Empty;
+        
+        return await HandleDue(context, helper, dueState.Note);
+    }
 
+    private static async Task<IResult> HandleDue(BotRequestContext context, IHelper helper, string note)
+    {
         if (await helper.GetUserAsync(context.ChatId) is not User user)
             return Results.Empty;
 
@@ -216,24 +247,29 @@ public class HomeworkCommand : IBotCommand
 
         await context.SetState(new NewHomeworkState.Confirm()
         {
-            Note = dueState.Note,
+            Note = note,
             Due = due.Value,
         });
-
+            
         return user.Settings.Language.GetLocalized(
             en =>
                 "Please confirm the addition of the homework:".Bold().Newline()
-                + $"🗒️ Note: {dueState.Note}".Newline()
-                + $"📅 Due: {due.Value.ToString("D", culture)}".Newline(),
+                + $"🗒️ Note: {note}".Newline()
+                + $"📅 Due: {due.Value.ToString("D", culture)}".Newline().Newline()
+                + "If you want to change the date, you can simply respond again",
             de =>
                 "Bitte bestätige das hinzufügen der Hausaufgabe:".Bold().Newline()
-                + $"🗒️ Notiz: {dueState.Note}".Newline()
-                + $"📅 Fällig: {due.Value.ToString("D", culture)}".Newline()
+                + $"🗒️ Notiz: {note}".Newline()
+                + $"📅 Fällig: {due.Value.ToString("D", culture)}".Newline().Newline()
+                + "Falls du das Datum ändern möchtest, kannst du einfach nochmals antworten"
         ).Delete().AsMarkup().WithButtons(Buttons.YesNoKeyboard(_addPrefix, lang));
     }
 
     private static async Task<IResult> OnConfirmAdd(BotRequestContext context, IHelper helper, PostgresDbContext db, ITimeTickerManager<TimeTickerEntity> ticker)
     {
+        if (context.Update.Type == UpdateType.Message)
+            return await OnDueRe(context, helper);
+        
         bool? confirm = Buttons.ParseYesNoCallback(context.CallbackData, _addPrefix);
 
         if (confirm == null)
@@ -267,7 +303,7 @@ public class HomeworkCommand : IBotCommand
 
         await db.SaveChangesAsync();
         
-        DateTime utcAtMidday = TimeZoneInfo.FindSystemTimeZoneById(user.Settings.TimeZone.Id).ToMiddayUtc(due);
+        DateTime utcAtMidday = TimeZoneInfo.FindSystemTimeZoneById(user.Settings.TimeZone.Id).ToMiddayUtc(due.AddDays(-1));
 
         await ticker.AddAsync(new TimeTickerEntity()
         {
@@ -326,13 +362,15 @@ public class HomeworkCommand : IBotCommand
                 de => "Parsing fehlgeschlagen. Bitte versuche es erneut."
             ).Delete();
         
-        if (index < 1 || index > user.Homework.Count)
+        List<Homework> open = user.Homework.Where(h => !h.CompletedAt.HasValue).ToList();
+        
+        if (index < 1 || index > open.Count)
             return lang.GetLocalized(
                 en => "The provided index is out of range. Please try again.",
                 de => "Der angegebene Index ist außerhalb des gültigen Bereichs. Bitte versuche es erneut."
             ).Delete();
 
-        if (user.Homework.OrderBy(h => h.Due).ElementAtOrDefault(index - 1) is not Homework homework)
+        if (open.OrderBy(h => h.Due).ElementAtOrDefault(index - 1) is not Homework homework)
             return user.Settings.Language.GetLocalized(
                 en => "Homework Index not found.",
                 de => "Hausaufgabe nicht gefunden."
@@ -379,8 +417,8 @@ public class HomeworkCommand : IBotCommand
         db.Remove(homework);
         await db.SaveChangesAsync();
         
-       if (await db.Set<TimeTickerEntity>().FirstOrDefaultAsync(t => t.Description.Contains($"Homework={confirmation.Id};")) is TimeTickerEntity entity)
-           await ticker.DeleteAsync(entity.Id);
+        if (await db.Set<TimeTickerEntity>().FirstOrDefaultAsync(t => t.Description.Contains($"Homework={confirmation.Id};")) is TimeTickerEntity entity)
+            await ticker.DeleteAsync(entity.Id);
         
         return user.Settings.Language.GetLocalized(
             en => "✅ Homework deleted successfully!",
