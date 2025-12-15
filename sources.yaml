@@ -4,11 +4,17 @@ typst-for-latex-users:
   author: Typst Dokumentation
   url: https://typst.app/docs/guides/for-latex-users/
 
-minimaltelegrambot-intentions:
+telegram-bots:
   type: repository
-  title: Minimal Telegram Bot - Intentions
+  title: .NET Client for Telegram Bot API
+  author: TelegramBots
+  url: https://github.com/TelegramBots/Telegram.Bot
+
+minimal-telegram-bot:
+  type: repository
+  title: Minimal Telegram Bot
   author: Pavel Kulakov
-  url: https://github.com/k-paul-acct/minimal-telegram-bot?tab=readme-ov-file#intentions
+  url: https://github.com/k-paul-acct/minimal-telegram-bot
 
 copilot-students:
   type: article
@@ -27,3 +33,65 @@ summarization-benchmark:
   title: Benchmark of Small Language Models for News Summarization
   author: Xtra Computing Group
   url: https://github.com/Xtra-Computing/SLM_Summary_Benchmark
+
+debian:
+  type: web
+  title: RaspberryPiImages
+  author: Debian
+  url: https://wiki.debian.org/RaspberryPiImages
+
+docker-engine:
+  type: web
+  title: Install Docker Engine on Debian
+  author: Docker
+  url: https://docs.docker.com/engine/install/debian/
+
+ical:
+  type: repository
+  title:  iCal.NET Repository
+  author: ical-org
+  url: https://github.com/ical-org/ical.net
+
+ef:
+  type: article
+  title:  Using Multiple Databases in ASP.NET Core via Entity Framework Core
+  author: CodeMaze
+  url: https://code-maze.com/aspnetcore-multiple-databases-efcore/
+
+what-is-docker:
+  type: article
+  title: What is Docker?
+  author: Docker
+  url: https://docs.docker.com/get-started/docker-overview/
+
+redis:
+  type: article
+  title: Introduction to Redis
+  author: Redis
+  url: https://redis.io/about/
+
+docker-compose:
+  type: article
+  title: Docker Compose
+  author: Docker
+  url: https://docs.docker.com/compose/
+
+docker-hub:
+  type: article
+  title: What is Docker Hub?
+  author: Geeks for Geeks
+  url: https://www.geeksforgeeks.org/devops/what-is-docker-hub/
+
+github-container-registry:
+  type: article
+  title: Working with the Container registry
+  author: Github
+  url: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry
+
+github-actions:
+  type: article
+  title: Creating a Docker container action
+  author: Github
+  url: https://docs.github.com/en/actions/tutorials/use-containerized-services/create-a-docker-container-action
+
+
