@@ -94,4 +94,25 @@ github-actions:
   author: Github
   url: https://docs.github.com/en/actions/tutorials/use-containerized-services/create-a-docker-container-action
 
+botfather:
+  type: article
+  title: Obtain Your Bot Token
+  author: Telegram
+  url: https://core.telegram.org/bots/tutorial#obtain-your-bot-token
 
+openai:
+  type: article
+  title: ApiKeys
+  author: OpenAI
+  url: https://platform.openai.com/api-keys
+
+recognizers-text:
+  type: repository
+  author: Wenhao Huang and Zijia Lin and Chris McConnell and Borje F. Karlsson
+  title: Recognizers-Text
+  month: jul,
+  year: 2017,
+  publisher: Zenodo
+  version: 1.0.0
+  doi: 10.5281/zenodo.6860598
+  url: https://doi.org/10.5281/zenodo.6860598
