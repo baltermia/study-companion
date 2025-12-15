@@ -20,6 +20,7 @@ public class OpenAiService(ChatClient chat) : IAiService
         new SystemChatMessage("You will receive the User information as a JSON object, and the Calender items in a list."),
         new SystemChatMessage("Also remember, the Time is in UTC but you get the Timezone in the user Settings."),
         new SystemChatMessage("You also get the language of the user, so please summarize in that language. 0 = English, 1 = German."),
+        new SystemChatMessage("Do not ask the user questions, just provide the summary."),
     ];
     
     private record Event(DateTime Start, DateTime End, string Description);
@@ -64,6 +65,7 @@ public class OpenAiService(ChatClient chat) : IAiService
         new SystemChatMessage("You will receive the User information as a JSON object, and the Calender items in a list."),
         new SystemChatMessage("Also remember, the Time is in UTC but you get the Timezone in the user Settings."),
         new SystemChatMessage("You also get the language of the user, so please summarize in that language. 0 = English, 1 = German."),
+        new SystemChatMessage("Do not ask the user questions, just provide the summary."),
     ];
     
     public async Task<string> GetUserMorningMessage(User user)
@@ -72,6 +74,7 @@ public class OpenAiService(ChatClient chat) : IAiService
 
         List<ChatMessage> messages = new(_morningMessages)
         {
+            new SystemChatMessage($"Todays Date is {DateTime.UtcNow:yyyy-MM-dd}."),
             new UserChatMessage($"User JSON: {userJson}"),
         };
         
