@@ -41,11 +41,11 @@ Repository: https://github.com/baltermia/study-companion/
 
 == Themenwahl / Relevanz
 
-Während einer Präsentation eines alten Studenten vom Modul in unserer Blockwoche kam mir die Idee, etwas zu machen, was mir das ganze Studium über helfen könnte. Letztendlich habe ich mich dann für einen Telegram Bot entschieden. Einerseits, weil ich auf dieser Platform viel Zeit verbringe, anderseits, weil ich damit auch schon einige Erfahrung habe. 
+Während einer Präsentation eines alten Studenten vom Modul in unserer Blockwoche kam mir die Idee, etwas zu machen, was mir das ganze Studium über helfen könnte. Letztendlich habe ich mich dann für einen Telegram Bot entschieden. Einerseits, da ich Telegram viel im Alltag nutze, anderseits, weil ich damit auch schon einige Erfahrung habe. 
 
 Der Bot - den ich _Study Companion_ nenne - soll Studierenden helfen, den überblick über Lektionen, Prüfungen, Hausaufgaben und allgemeine Notizen zu behalten. Das macht er, indem er einerseits tägliche Erinnerungen schickt, aber auch auf Anfrage jegliche Informationen bereitstellt. Das wichtigste Feature wird das Einlesen und Verarbeiten des von der FHGR bereitgestellten iCal Stundenplans sein, womit der Bot automatisch weiss, wann welche Lektion stattfindet. 
 
-Ich finde das Thema relevant, einerseits, weil ich es andern Studierenden so einfach wie möglichen machen möchte, den Bot selbst auf einem Raspberry laufen zu lassen. Anderseits werde ich künstliche Intelligenz verwenden, um schlanke Zusammenfassungen zu generieren.
+Das Thema ist relevant, einerseits weil ich es andern Studierenden so einfach wie möglichen machen möchte, den Bot selbst auf einem Raspberry laufen zu lassen. Anderseits werde ich künstliche Intelligenz verwenden, um schlanke Zusammenfassungen zu generieren.
 
 == Eingrenzung des Themas
 
@@ -67,7 +67,7 @@ Dazu sind noch konkretere Unterfragen formuliert:\
 == Verwendung von Typst
 
 Ich möchte noch ganz kurz über die Verwendung von #link("https://typst.app/")[Typst] in meinem Projekt schreiben, da es meiner Meinung nach auch direkt mit der Projektarbeit zu tun hat. Typst ist eine Sprache welche ähnliche Ziele verfolgt wie LaTeX, aber meiner persönlichen Erfahrung nach viel einfacher zu verwenden ist. Da dies eine der ersten Projektarbeiten in unserem Studium ist, und auch LaTex empfohlen wurde, wollte ich dies hier kurz erwähnen.
-Ich empfehle, den Quellcode dieses Dokumentes anzuschauen, um einen Eindruck von der Sprache zu bekommen. (Verfügbar auf Github unter #link("https://github.com/baltermia/study-companion/blob/main/doku.typ")[baltermia/study-companion/doku.typ]).
+Ich empfehle, den Quellcode dieses Dokumentes anzuschauen, um einen Eindruck von der Sprache zu bekommen. (Verfügbar #link("https://github.com/baltermia/study-companion/blob/main/doku.typ")[im Repository]).
 
 = Durchführung
 
@@ -88,11 +88,11 @@ Beim erstellen von Hausaufgaben wird ein Datum benötigt. Da es für Nutzer etwa
 
 == iCal Verarbeitung
 
-Auch für die iCal Verarbeitung gibt es eine geeignete .NET Bibliotheke, nämlich _iCal.NET_. @ical 
+Auch für die iCal Verarbeitung gibt es eine geeignete .NET Bibliothek, nämlich _iCal.NET_. @ical 
 
 Erst muss der Kalender heruntergeladen werden, dazu kann direkt die `.ics`-Datei über den .NET-integrierten `HttpClient` heruntergeladen werden. Danach kann die Datei mit der `Calendar.Load` Methode der iCal.NET Bibliothek eingelesen werden. 
 
-Da der User den Kalender jederzeit anschauen kann, macht es keinen Sinn, diesen bei jeder Anfrage neu herunterzuladen. Daher wird diese Datei lokal in einer Datenbank gespeichert. Ich habe mich für eine Postgres Datenbank entschieden, es kann aber dank der Nutzung des .NET Entity Frameworks auch einfach auf eine andere Datenbank gewechselt werden.
+Da der User den Kalender jederzeit anschauen kann, macht es keinen Sinn, diesen bei jeder Anfrage neu herunterzuladen. Daher wird diese Datei lokal in einer Datenbank gespeichert. Ich habe mich für eine Postgres Datenbank entschieden, es kann aber dank der Nutzung des .NET Entity Frameworks auch einfach auf eine andere Datenbank gewechselt werden. Die Nutzereinstellungen werden auch in der Datenbank gespeichert. 
 Das Entity Framework ist eine Art Repository-Pattern, welches die Datenbankzugriffe abstrahiert und es so ermöglicht, mit verschiedenen Datenbanken zu arbeiten, ohne den Code anpassen zu müssen. @ef
 
 == AI Integration
@@ -138,7 +138,7 @@ Die genauen Installationsschritte sind im Repository-Readme nochmals besser und 
 
 == Bot Funktionalitäten
 
-Detaillierte Bilder der Funktionalitäten vom Bot sind im #link("https://github.com/baltermia/study-companion?tab=readme-ov-file#installation-and-usage")[Repository README] dokumentiert.
+Detaillierte Bilder der Funktionalitäten vom Bot sind im #link("https://github.com/baltermia/study-companion?tab=readme-ov-file#screenshots")[Repository README] dokumentiert.
 
 === Start
 

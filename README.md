@@ -94,3 +94,44 @@ docker compose -f docker-compose.dev.yml
 ```
 
 Add `-d` for the detached mode, otherwise ditch it which will show you the logs.
+
+## Screenshots
+
+### Buttons
+
+These are always shown. On mobile it replaces the keyboard.
+
+![](./docs/buttons.png)
+
+### Calendar
+
+Current week and one week into the future.
+
+![](./docs/calendar.png)
+
+### Homework
+
+Dialog when creating new Homework.
+
+![](./docs/homework.png)
+
+When homework is done, it is shown for the rest of the day.
+
+![](./docs/homework-done.png)
+
+### Settings
+
+Also shows options when clicking any of the `Language` or `Timezone` buttons.
+
+![](./docs/settings.png)
+
+### AI Summary
+
+The AI Summary basically just summarizes the homework and upcoming events.
+
+![](./docs/ai.png)
+
+The Bot also uses advanced Telegram features like Message deletion and Chat Actions:
+
+![](./docs/loading.png)
+![](./docs/typing.png)
