@@ -1,5 +1,7 @@
 # 🤖 Telegram Study Companion
 
+[Screenshots](#screenshots)
+
 ## Installation
 
 ### Prerequisites
