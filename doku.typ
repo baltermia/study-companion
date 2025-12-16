@@ -1,10 +1,9 @@
 #import "@preview/bubble:0.2.2": *
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
-#import "@preview/wrap-it:0.1.1": wrap-content
 
 #show: bubble.with(
-  title: "Projekt Raspberry Pi: Study Companion",
+  title: "Raspberry Pi Projekt: Study Companion",
   subtitle: "Computer Science (cds-205) HS25",
   author: "Baltermia Clopath",
   affiliation: "FHGR",
