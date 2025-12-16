@@ -12,7 +12,8 @@
   //year: "2025",
   class: "AISE25",
   // other: ("Made with Typst", "https://typst.com"),
-  main-color: "4DA6FF", //set the main color
+  main-color: "C51A4A", //set the main color
+  //color-words: ("Raspberry Pi",)
   // logo: image("logo.png"), //set the logo
 ) 
 
@@ -33,7 +34,8 @@
 
 = Abstract
 
-Das Projekt beschreibt die Entwicklung eines Telegram-Bots, der Studierenden beim Organisieren ihres Studienalltags unterstützt. Ziel ist es, mit automatischen Erinnerungen, Tagesübersichten und KI-generierten Zusammenfassungen eine einfache, digitale Lernhilfe zu schaffen. Der Bot liest den Stundenplan über einen iCal-Kalender der FHGR ein und fasst die Lektionen zusammen. Technisch basiert der Code vom Bot auf dem .NET-Framework und wird in einem Docker-Container-Image geliefert, um eine einfache Installation auf einem Raspberry Pi zu ermöglichen. Ergänzend wurden Redis und PostgreSQL für die persistente Datenspeicherung integriert. Das Docker-Image wird automatisch über GitHub Actions bei jedem Update neu gebaut und veröffentlicht.
+Das Projekt beschreibt die Entwicklung eines Telegram-Bots, der Studierenden beim Organisieren ihres Studienalltags unterstützt. Ziel ist es, mit automatischen Erinnerungen, Tagesübersichten und KI-generierten Zusammenfassungen eine einfache, digitale Lernhilfe zu schaffen. Der Bot liest den Stundenplan über einen iCal-Kalender der FHGR ein und fasst die Lektionen zusammen. Technisch basiert der Code vom Bot auf dem .NET-Framework und wird in einem Docker-Container-Image geliefert, um eine einfache Installation auf einem Raspberry Pi zu ermöglichen. Ergänzend wurden Redis und PostgreSQL für die persistente Datenspeicherung integriert. Das Docker-Image wird automatisch über GitHub Actions bei jedem Update neu gebaut und veröffentlicht.\
+Repository: https://github.com/baltermia/study-companion/
 
 = Einführung
 
@@ -186,7 +188,7 @@ Das erstellen des Bots ist mir leicht gefallen, da ich bereits Erfahrung mit .NE
 
 Die Dokumentation hat mir auch Schwierigkeiten bereitet, denn ich wäre gerne noch etwas detaillierter auf die einzelnen Implementationen und Resultate eingegangen. Leider sind wir aber auf eine vordefinierte Seitenanzahl limitiert, welche ich jetzt bereits etwas überschritten habe.
 
-Der Bot liefert noch viel Potenzial für Erweiterung - z.B.  sollten AI-Anbieter direkt im Compose‑File konfigurierbar sein, statt aktuell nur OpenAI zu unterstützen. Ich hoffe, dass ich in zukünftigen Projekten die Möglichkeit haben werde, weitere Features hinzuzufügen.
+Der Bot liefert noch viel Potenzial für Erweiterung - z.B. sollten verschiedene AI-Anbieter direkt im Compose‑File konfigurierbar sein, statt aktuell nur OpenAI zu unterstützen. Ich hoffe, dass ich in zukünftigen Projekten die Möglichkeit haben werde, weitere Features hinzuzufügen.
 
 #pagebreak()
 
