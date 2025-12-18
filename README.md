@@ -1,7 +1,7 @@
 # 🤖 Telegram Study Companion
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/baltermia/study-companion/docker-image.yml)
-
+![ghcr pulls](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Fbaltermia%2Fstudy-companion%2Fstudy-companion&query=downloadCount&label=Docker+Pulls&logo=github)
 
 [Screenshots](#screenshots)
 
