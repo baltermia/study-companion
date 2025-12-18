@@ -124,7 +124,7 @@ Das Installieren des Bots auf einen Raspberry Pi ist so einfach wie geplant. Es 
 2. Ein Telegram Bot Token wird benötigt (kann über den BotFather auf Telegram erstellt werden @botfather).
 3. Ein OpenAI API Key wird benötigt @openai
 
-Danach muss nur das Docker-Compose File angepasst werden, um die beiden Keys einzutragen. Danach kann der Bot mit den folgenden Befehlen gestartet werden:
+Danach muss nur das #link("https://github.com/baltermia/study-companion?tab=readme-ov-file#docker-compose")[Docker-Compose File] angepasst werden, um die beiden Keys einzutragen. Danach kann der Bot mit den folgenden Befehlen gestartet werden:
 
 ```bash
 docker compose pull # zieht das neuste Image vom Repository
@@ -133,7 +133,7 @@ docker compose up -d # startet den Bot im Hintergrund
 
 Die gleichen Kommandos können für eine Update des Bots verwendet werden. Denn das `pull` Kommando zieht immer das neuste Image vom Repository.
 
-Die genauen Installationsschritte sind im Repository-Readme nochmals besser und detaillierter beschrieben.
+Die genauen Installationsschritte sind im #link("https://github.com/baltermia/study-companion?tab=readme-ov-file#installation")[Repository-Readme] nochmals besser und detaillierter beschrieben.
 
 == Bot Funktionalitäten
 
