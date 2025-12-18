@@ -92,7 +92,7 @@ ConnectionStrings:DefaultConnection = Host=localhost;Port=5432;Database=studydb;
 
 Run the compose file as follows:
 ```
-docker compose -f docker-compose.dev.yml
+docker compose up -f docker-compose.dev.yml
 ```
 
 Add `-d` for the detached mode, otherwise ditch it which will show you the logs.
