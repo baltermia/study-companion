@@ -1,5 +1,8 @@
 # 🤖 Telegram Study Companion
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/baltermia/study-companion/docker-image.yml)
+
+
 [Screenshots](#screenshots)
 
 ## Installation
